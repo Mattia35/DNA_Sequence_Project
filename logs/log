@@ -1,0 +1,114 @@
+000 (285908.000.000) 2025-01-28 13:35:11 Job submitted from host: <192.168.0.102:9618?addrs=192.168.0.102-9618&alias=submitter&noUDP&sock=schedd_2032_5c88>
+...
+014 (285908.000.000) 2025-01-28 13:35:18 Node 0 executing on host: <192.168.0.148:9618?addrs=192.168.0.148-9618&alias=node148.di.rm1&noUDP&sock=startd_1547_b119>
+...
+001 (285908.000.000) 2025-01-28 13:35:18 Job executing on host: MPI_job
+...
+008 (285908.000.000) 2025-01-28 13:35:20 Launching orted on Node 0 of 1
+...
+008 (285908.000.000) 2025-01-28 13:35:21 orted exited on Node 0 of 1
+...
+015 (285908.000.000) 2025-01-28 13:35:21 Node 0 terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	4347  -  Run Bytes Sent By Node
+	33127  -  Run Bytes Received By Node
+	4347  -  Total Bytes Sent By Node
+	33127  -  Total Bytes Received By Node
+...
+005 (285908.000.000) 2025-01-28 13:35:21 Job terminated.
+	(1) Normal termination (return value 1)
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	4347  -  Run Bytes Sent By Job
+	33127  -  Run Bytes Received By Job
+	4347  -  Total Bytes Sent By Job
+	33127  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :                 8         8 
+	   Disk (KB)            :       48       35    467548 
+	   Memory (MB)          :        0        1       128 
+
+	Job terminated of its own accord at 2025-01-28T13:35:21Z with exit-code 1.
+...
+000 (285925.000.000) 2025-01-28 14:03:41 Job submitted from host: <192.168.0.102:9618?addrs=192.168.0.102-9618&alias=submitter&noUDP&sock=schedd_2032_5c88>
+...
+014 (285925.000.000) 2025-01-28 14:03:48 Node 0 executing on host: <192.168.0.148:9618?addrs=192.168.0.148-9618&alias=node148.di.rm1&noUDP&sock=startd_1547_b119>
+...
+001 (285925.000.000) 2025-01-28 14:03:48 Job executing on host: MPI_job
+...
+008 (285925.000.000) 2025-01-28 14:03:50 Launching orted on Node 0 of 1
+...
+008 (285925.000.000) 2025-01-28 14:03:51 orted exited on Node 0 of 1
+...
+015 (285925.000.000) 2025-01-28 14:03:51 Node 0 terminated.
+	(1) Normal termination (return value 139)
+		Usr 0 00:00:01, Sys 0 00:00:01  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:01, Sys 0 00:00:01  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	60494  -  Run Bytes Sent By Node
+	33127  -  Run Bytes Received By Node
+	60494  -  Total Bytes Sent By Node
+	33127  -  Total Bytes Received By Node
+...
+005 (285925.000.000) 2025-01-28 14:03:51 Job terminated.
+	(1) Normal termination (return value 139)
+		Usr 0 00:00:01, Sys 0 00:00:01  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:01, Sys 0 00:00:01  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	60494  -  Run Bytes Sent By Job
+	33127  -  Run Bytes Received By Job
+	60494  -  Total Bytes Sent By Job
+	33127  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :                 8         8 
+	   Disk (KB)            :      103       35    467548 
+	   Memory (MB)          :        0        1       128 
+
+	Job terminated of its own accord at 2025-01-28T14:03:51Z with exit-code 139.
+...
+000 (285928.000.000) 2025-01-28 14:08:23 Job submitted from host: <192.168.0.102:9618?addrs=192.168.0.102-9618&alias=submitter&noUDP&sock=schedd_2032_5c88>
+...
+014 (285928.000.000) 2025-01-28 14:08:25 Node 0 executing on host: <192.168.0.148:9618?addrs=192.168.0.148-9618&alias=node148.di.rm1&noUDP&sock=startd_1547_b119>
+...
+001 (285928.000.000) 2025-01-28 14:08:25 Job executing on host: MPI_job
+...
+008 (285928.000.000) 2025-01-28 14:08:27 Launching orted on Node 0 of 1
+...
+008 (285928.000.000) 2025-01-28 14:08:28 orted exited on Node 0 of 1
+...
+015 (285928.000.000) 2025-01-28 14:08:28 Node 0 terminated.
+	(1) Normal termination (return value 139)
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	30750  -  Run Bytes Sent By Node
+	33127  -  Run Bytes Received By Node
+	30750  -  Total Bytes Sent By Node
+	33127  -  Total Bytes Received By Node
+...
+005 (285928.000.000) 2025-01-28 14:08:28 Job terminated.
+	(1) Normal termination (return value 139)
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Remote Usage
+		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
+	30750  -  Run Bytes Sent By Job
+	33127  -  Run Bytes Received By Job
+	30750  -  Total Bytes Sent By Job
+	33127  -  Total Bytes Received By Job
+	Partitionable Resources :    Usage  Request Allocated 
+	   Cpus                 :                 4         8 
+	   Disk (KB)            :       74       35    467548 
+	   Memory (MB)          :        0        0       128 
+
+	Job terminated of its own accord at 2025-01-28T14:08:28Z with exit-code 139.
+...

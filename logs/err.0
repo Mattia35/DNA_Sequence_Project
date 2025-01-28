@@ -1,0 +1,57 @@
+--------------------------------------------------------------------------
+By default, for Open MPI 4.0 and later, infiniband ports on a device
+are not used by default.  The intent is to use UCX for these devices.
+You can override this policy by setting the btl_openib_allow_ib MCA parameter
+to true.
+
+  Local host:              node148
+  Local adapter:           ibp129s0
+  Local port:              1
+
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+WARNING: There was an error initializing an OpenFabrics device.
+
+  Local host:   node148
+  Local device: ibp129s0
+--------------------------------------------------------------------------
+[node148:2127807] *** Process received signal ***
+[node148:2127807] Signal: Segmentation fault (11)
+[node148:2127807] Signal code: Address not mapped (1)
+[node148:2127807] Failing at address: 0xf8
+[node148:2127805] *** Process received signal ***
+[node148:2127805] Signal: Segmentation fault (11)
+[node148:2127805] Signal code: Address not mapped (1)
+[node148:2127805] Failing at address: 0xf8
+[node148:2127805] [ 0] /lib/x86_64-linux-gnu/libc.so.6(+0x43090)[0x15291bcc8090]
+[node148:2127805] [ 1] /lib/x86_64-linux-gnu/libc.so.6(cfree+0x20)[0x15291bd1f6f0]
+[node148:2127805] [ 2] align_mpi(+0x31cd)[0x555be61711cd]
+[node148:2127805] [ 3] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf3)[0x15291bca9083]
+[node148:2127805] [ 4] align_mpi(+0x138e)[0x555be616f38e]
+[node148:2127805] *** End of error message ***
+[node148:2127803] *** Process received signal ***
+[node148:2127803] Signal: Segmentation fault (11)
+[node148:2127803] Signal code: Address not mapped (1)
+[node148:2127803] Failing at address: 0xf8
+[node148:2127803] [ 0] /lib/x86_64-linux-gnu/libc.so.6(+0x43090)[0x14e9207e6090]
+[node148:2127803] [ 1] /lib/x86_64-linux-gnu/libc.so.6(cfree+0x20)[0x14e92083d6f0]
+[node148:2127803] [ 2] align_mpi(+0x31cd)[0x55f7e395e1cd]
+[node148:2127803] [ 3] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf3)[0x14e9207c7083]
+[node148:2127803] [ 4] align_mpi(+0x138e)[0x55f7e395c38e]
+[node148:2127803] *** End of error message ***
+[node148:2127807] [ 0] /lib/x86_64-linux-gnu/libc.so.6(+0x43090)[0x14b517664090]
+[node148:2127807] [ 1] /lib/x86_64-linux-gnu/libc.so.6(cfree+0x20)[0x14b5176bb6f0]
+[node148:2127807] [ 2] align_mpi(+0x31cd)[0x55caf6ea21cd]
+[node148:2127807] [ 3] /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf3)[0x14b517645083]
+[node148:2127807] [ 4] align_mpi(+0x138e)[0x55caf6ea038e]
+[node148:2127807] *** End of error message ***
+--------------------------------------------------------------------------
+Primary job  terminated normally, but 1 process returned
+a non-zero exit code. Per user-direction, the job has been aborted.
+--------------------------------------------------------------------------
+--------------------------------------------------------------------------
+mpirun noticed that process rank 2 with PID 2127805 on node 0 exited on signal 11 (Segmentation fault).
+--------------------------------------------------------------------------
+[node148:2127531] 3 more processes have sent help message help-mpi-btl-openib.txt / ib port not selected
+[node148:2127531] Set MCA parameter "orte_base_help_aggregate" to 0 to see all help / error messages
+[node148:2127531] 3 more processes have sent help message help-mpi-btl-openib.txt / error in device init
