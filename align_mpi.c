@@ -66,7 +66,6 @@ void increment_matches( int pat, unsigned long *pat_found, unsigned long *pat_le
  */
 void generate_rng_sequence( rng_t *random, float prob_G, float prob_C, float prob_A, char *seq, unsigned long length ) {
 	unsigned long ind; 
-	printf("random: %f\n", rng_next(random));
 	for( ind=0; ind<length; ind++ ) {
 		double prob = rng_next( random );
 		if( prob < prob_G ) seq[ind] = 'G';
