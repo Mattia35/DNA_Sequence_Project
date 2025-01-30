@@ -52,15 +52,14 @@ double cp_Wtime(){
  * Function: Increment the number of pattern matches on the sequence positions
  * 	This function can be changed and/or optimized by the students
  */
+/*
 void increment_matches( int pat, unsigned long *pat_found, unsigned long *pat_length, int *seq_matches) {	
 	for( unsigned long ind=0; ind<pat_length[pat]; ind++) {
-		{	
-		#pragma omp atomic
+		#pragma omp atomic	
 		seq_matches[ pat_found[pat] + ind ] ++;
-		}
 	}
 }
-
+*/
 /*
  * Function: Fill random sequence or pattern
  */
@@ -360,17 +359,16 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* 4. Initialize ancillary structures */
-	#pragma omp parallel for
 	for( ind=0; ind<pat_number; ind++) {
 		pat_found[ind] = (unsigned long)NOT_FOUND;
 	}
-	#pragma omp parallel for
 	for( lind=0; lind<seq_length; lind++) {
 		seq_matches[lind] = NOT_FOUND;
 	}
-	/* 5. Search for each pattern */
-	#pragma omp parallel for private(lind) reduction(+:pat_matches) 
+	/* 5. Search for each pattern */ 
+	#pragma omp parallel for private(lind) reduction(+:pat_matches) reduction(+:seq_matches[:seq_length])
 	for( int pat=0; pat < pat_number; pat++ ) {
+	
 
 		/* 5.1. For each posible starting position */
 		for( unsigned long start=0; start <= seq_length - pat_length[pat]; start++) {
@@ -382,7 +380,6 @@ int main(int argc, char *argv[]) {
 			}
 			/* 5.1.2. Check if the loop ended with a match */
 			if ( lind == pat_length[pat] ) {
-				#pragma omp atomic
 				pat_matches++;
 				pat_found[pat] = start;
 				break;
@@ -392,10 +389,12 @@ int main(int argc, char *argv[]) {
 		/* 5.2. Pattern found */
 		if ( pat_found[pat] != (unsigned long)NOT_FOUND ) {
 			/* 4.2.1. Increment the number of pattern matches on the sequence positions */
-			increment_matches( pat, pat_found, pat_length, seq_matches);
+			for( unsigned long ind=0; ind<pat_length[pat]; ind++) {	
+				seq_matches[ pat_found[pat] + ind ] ++;
+			}
 		}
 	}
-
+	
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
 	unsigned long checksum_found = 0;
