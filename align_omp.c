@@ -366,13 +366,10 @@ int main(int argc, char *argv[]) {
 		seq_matches[lind] = NOT_FOUND;
 	}
 	/* 5. Search for each pattern */ 
-	#pragma omp parallel for private(lind) reduction(+:pat_matches) reduction(+:seq_matches[:seq_length])
+	#pragma omp parallel for private(lind) reduction(+:pat_matches) reduction(+:seq_matches[:seq_length]) schedule(dynamic)
 	for( int pat=0; pat < pat_number; pat++ ) {
-	
-
 		/* 5.1. For each posible starting position */
 		for( unsigned long start=0; start <= seq_length - pat_length[pat]; start++) {
-
 			/* 5.1.1. For each pattern element */
 			for( lind=0; lind<pat_length[pat]; lind++) {
 				/* Stop this test when different nucleotids are found */
