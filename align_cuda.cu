@@ -16,6 +16,7 @@
 #include<string.h>
 #include<limits.h>
 #include<sys/time.h>
+#include<mpi.h>
 
 /* Headers for the CUDA assignment versions */
 #include<cuda.h>
@@ -159,7 +160,7 @@ int main(int argc, char *argv[]) {
 	/* 0. Default output and error without buffering, forces to write immediately */
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
-
+	
 	/* 1. Read scenary arguments */
 	/* 1.1. Check minimum number of arguments */
 	if (argc < 15) {
