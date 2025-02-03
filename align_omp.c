@@ -379,18 +379,21 @@ int main(int argc, char *argv[]) {
 			if ( lind == pat_length[pat] ) {
 				pat_matches++;
 				pat_found[pat] = start;
+				for( unsigned long ind=0; ind<pat_length[pat]; ind++) {	
+					seq_matches[ pat_found[pat] + ind ] ++;
+				}
 				break;
 			}
 		}
-
-		/* 5.2. Pattern found */
+	}
+	/*
 		if ( pat_found[pat] != (unsigned long)NOT_FOUND ) {
-			/* 4.2.1. Increment the number of pattern matches on the sequence positions */
 			for( unsigned long ind=0; ind<pat_length[pat]; ind++) {	
 				seq_matches[ pat_found[pat] + ind ] ++;
 			}
 		}
 	}
+	*/
 	
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;

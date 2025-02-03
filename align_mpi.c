@@ -48,20 +48,6 @@ double cp_Wtime(){
  */
 
 /*
- * Function: Increment the number of pattern matches on the sequence positions
- * 	This function can be changed and/or optimized by the students
- */
-void increment_matches( int pat, unsigned long *pat_found, unsigned long *pat_length, int *seq_matches ) {
-	unsigned long ind;	
-	for( ind=0; ind<pat_length[pat]; ind++) {
-		if ( seq_matches[ pat_found[pat] + ind ] == NOT_FOUND )
-			seq_matches[ pat_found[pat] + ind ] = 0;
-		else
-			seq_matches[ pat_found[pat] + ind ] ++;
-	}
-}
-
-/*
  * Function: Fill random sequence or pattern
  */
 void generate_rng_sequence( rng_t *random, float prob_G, float prob_C, float prob_A, char *seq, unsigned long length ) {
@@ -384,9 +370,7 @@ int main(int argc, char *argv[]) {
 	int inizio_pat = rank * massima_lunghezza_pat;
 
 	//fine modifiche
-
-	//if this process is the last rank, analize the last patterns, so more than pat_number / size
-	if (rank==0){
+if (rank==0){
 		for( pat= 0; pat < massima_lunghezza_pat; pat++ ) {
 			/* 5.1. For each posible starting position */
 			for( start=0; start <= seq_length - pat_length[pat]; start++) {
@@ -400,14 +384,11 @@ int main(int argc, char *argv[]) {
 				if ( lind == pat_length[pat] ) {
 					pat_matches++;
 					pat_found[pat] = start;
+					for( unsigned long ind=0; ind<pat_length[pat]; ind++) {
+						seq_matches[ pat_found[pat] + ind ] ++;
+					}
 					break;
 				}
-			}
-
-			/* 5.2. Pattern found */
-			if ( pat_found[pat] != (unsigned long)NOT_FOUND ) {
-				/* 4.2.1. Increment the number of pattern matches on the sequence positions */
-				increment_matches( pat, pat_found, pat_length, seq_matches );
 			}
 		}
 	}
@@ -426,14 +407,11 @@ int main(int argc, char *argv[]) {
 				if ( lind == pat_length[pat] ) {
 					pat_matches++;
 					pat_found[pat] = start;
+					for( unsigned long ind=0; ind<pat_length[pat]; ind++) {
+						seq_matches[ pat_found[pat] + ind ] ++;
+					}
 					break;
 				}
-			}
-
-			/* 5.2. Pattern found */
-			if ( pat_found[pat] != (unsigned long)NOT_FOUND ) {
-				/* 4.2.1. Increment the number of pattern matches on the sequence positions */
-				increment_matches( pat, pat_found, pat_length, seq_matches );
 			}
 		}
 	}

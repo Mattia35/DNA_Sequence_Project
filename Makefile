@@ -8,7 +8,10 @@
 # Grupo Trasgo, Universidad de Valladolid (Spain)
 #
 
-# Compilers
+# Detect macOS environment and set appropriate compilers
+UNAME_S := $(shell uname -s)
+
+# Default compilers and flags
 CC=gcc
 OMPFLAG=-fopenmp
 MPICC=mpicc
@@ -18,6 +21,13 @@ CUDACC=nvcc
 LIBS=-lm
 FLAGS=-O3 -Wall
 CUDAFLAGS=-O3 -Xcompiler -Wall
+
+# macOS-specific settings for LLVM
+ifeq ($(UNAME_S), Darwin)
+    CC=/opt/homebrew/opt/llvm/bin/clang
+    OMPFLAG=-fopenmp
+    FLAGS+=-I/opt/homebrew/opt/llvm/include -L/opt/homebrew/opt/llvm/lib
+endif
 
 # Targets to build
 OBJS=align_seq align_omp align_mpi align_cuda
@@ -29,14 +39,14 @@ help:
 	@echo
 	@echo "Group Trasgo, Universidad de Valladolid (Spain)"
 	@echo
-	@echo "make align_seq	Build only the sequential version"
-	@echo "make align_omp	Build only the OpenMP version"
-	@echo "make align_mpi	Build only the MPI version"
-	@echo "make align_cuda	Build only the CUDA version"
+	@echo "make align_seq\tBuild only the sequential version"
+	@echo "make align_omp\tBuild only the OpenMP version"
+	@echo "make align_mpi\tBuild only the MPI version"
+	@echo "make align_cuda\tBuild only the CUDA version"
 	@echo
-	@echo "make all	Build all versions (Sequential, OpenMP, MPI, CUDA)"
-	@echo "make debug	Build all version with demo output for small sequences"
-	@echo "make clean	Remove targets"
+	@echo "make all\tBuild all versions (Sequential, OpenMP, MPI, CUDA)"
+	@echo "make debug\tBuild all version with demo output for small sequences"
+	@echo "make clean\tRemove targets"
 	@echo
 
 all: $(OBJS)
@@ -52,7 +62,6 @@ align_mpi: align_mpi.c rng.c
 
 align_cuda: align_cuda.cu rng.c
 	$(CUDACC) $(CUDAFLAGS) $(DEBUG) $< $(LIBS) -o $@
-
 
 # Remove the target files
 clean:

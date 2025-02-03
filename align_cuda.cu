@@ -47,7 +47,7 @@ double cp_Wtime(){
 
 
 /*
- *
+ *----------------------------------------------------------------------------------------------------------------
  * START HERE: DO NOT CHANGE THE CODE ABOVE THIS POINT
  * DO NOT USE OpenMP IN YOUR CODE
  *
@@ -69,7 +69,7 @@ void increment_matches( int pat, unsigned long *pat_found, unsigned long *pat_le
 	}
 }
 /*
- *
+ *----------------------------------------------------------------------------------------------------------------
  * STOP HERE: DO NOT CHANGE THE CODE BELOW THIS POINT
  *
  */
@@ -342,7 +342,7 @@ int main(int argc, char *argv[]) {
 	double ttotal = cp_Wtime();
 
 /*
- *
+ *----------------------------------------------------------------------------------------------------------------
  * START HERE: DO NOT CHANGE THE CODE ABOVE THIS POINT
  * DO NOT USE OpenMP IN YOUR CODE
  *
@@ -452,7 +452,7 @@ int main(int argc, char *argv[]) {
 	free( seq_matches );
 
 /*
- *
+ *----------------------------------------------------------------------------------------------------------------
  * STOP HERE: DO NOT CHANGE THE CODE BELOW THIS POINT
  *
  */
