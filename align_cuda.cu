@@ -72,7 +72,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	for (start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		// Check for match for each pattern element
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (shared_sequence[start + lind] != d_patterns[pat * d_pat_lengths[pat] + lind]) break;
+			if (shared_sequence[start + lind] != *d_patterns[pat * d_pat_lengths[pat] + lind]) break;
 		}
 		
 		// If a match is found
@@ -339,7 +339,7 @@ int main(int argc, char *argv[]) {
 
 	/* Allocate and move the patterns to the GPU */
 	unsigned long *d_pat_length;
-	char **d_pattern;
+	const char **d_pattern;
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_length, sizeof(unsigned long) * pat_number ) );
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pattern, sizeof(char *) * pat_number ) );
 
@@ -467,11 +467,11 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
-	cuda_free( d_pat_length );
-	cuda_free( d_pattern );
-	cuda_free( d_seq_matches );
-	cuda_free( d_pat_matches );
-	cuda_free( d_pat_found );
+	cudaFree( d_pat_length );
+	cudaFree( d_pattern );
+	cudaFree( d_seq_matches );
+	cudaFree( d_pat_matches );
+	cudaFree( d_pat_found );
 	int pat_matches_root = 0;
 	unsigned long *pat_foundRoot;
 	int *seq_matchesRoot;
