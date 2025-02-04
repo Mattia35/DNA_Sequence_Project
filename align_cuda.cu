@@ -509,7 +509,7 @@ int main(int argc, char *argv[]) {
         MPI_Isend(pat_found_res, pat_number, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD, &request);
 	}
 	if (rank==0){
-		MPI_Recv(pat_found_res, pat_number, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Recv(pat_found_res, pat_number, MPI_UNSIGNED_LONG, size-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	
 	MPI_Finalize();
