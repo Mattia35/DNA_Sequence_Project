@@ -77,7 +77,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		
 		// If a match is found
 		if (lind == d_pat_lengths[pat]) {
-			d_pat_matches[pat]++;  // Atomically increment the match count for the pattern
+			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			
 			// Update the seq_matches
@@ -442,8 +442,8 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMemcpy( d_seq_matches, seq_matches, sizeof(int) * seq_length, cudaMemcpyHostToDevice ) );
 
 	int *d_pat_matches;
-	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_matches, sizeof(int) * pat_number ) );
-	CUDA_CHECK_FUNCTION( cudaMemset( d_pat_matches, 0, sizeof(int) * pat_number ) );
+	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_matches, sizeof(int)) );
+	CUDA_CHECK_FUNCTION( cudaMemset( d_pat_matches, 0, sizeof(int)) );
 
 	int *d_pat_found;
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_found, sizeof(unsigned long) * pat_number ) );
@@ -508,9 +508,6 @@ int main(int argc, char *argv[]) {
 	if (rank==0){
 		MPI_Recv(pat_found_res, pat_number, MPI_UNSIGNED_LONG, size-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
-	
-	MPI_Finalize();
-	return 0;
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
