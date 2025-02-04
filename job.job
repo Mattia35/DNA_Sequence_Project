@@ -2,11 +2,11 @@ universe = parallel
 
 executable = openmpiscript.sh
 
-arguments = align_mpi 300 0.1 0.3 0.35 100 5 5 300 150 50 150 80 M 609823
+arguments = align_cuda 300 0.1 0.3 0.35 100 5 5 300 150 50 150 80 M 609823
 
 should_transfer_files = YES
 
-transfer_input_files = align_mpi
+transfer_input_files = align_cuda
 
 when_to_transfer_output = on_exit_or_evict
 
@@ -16,7 +16,7 @@ log = logs/log
 
 machine_count = 1
 request_cpus = 2
-
+request_gpus = 1
 getenv = True
 
 queue

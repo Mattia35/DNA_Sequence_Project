@@ -460,9 +460,10 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
+	printf("ciao\n");
+	return 0;
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length);
 	CUDA_CHECK_KERNEL();
-
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
