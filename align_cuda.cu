@@ -460,8 +460,6 @@ int main(int argc, char *argv[]) {
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length);
-	MPI_Finalize();
-	return 0;
 	CUDA_CHECK_KERNEL();
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
@@ -478,6 +476,8 @@ int main(int argc, char *argv[]) {
 	unsigned long *pat_found_res;
 	int massima_lunghezza_pat = (pat_number / size) + (pat_number % size);
 	int inizio_pat = rank * massima_lunghezza_pat;
+	MPI_Finalize();
+	return 0;
 	if(rank==0 or rank==size-1){
 		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-(pat_number % size)) );
 		if ( pat_foundRoot == NULL ) {
