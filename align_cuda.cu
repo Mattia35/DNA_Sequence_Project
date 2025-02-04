@@ -476,8 +476,6 @@ int main(int argc, char *argv[]) {
 	unsigned long *pat_found_res;
 	int massima_lunghezza_pat = (pat_number / size) + (pat_number % size);
 	int inizio_pat = rank * massima_lunghezza_pat;
-	MPI_Finalize();
-	return 0;
 	if(rank==0 or rank==size-1){
 		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-(pat_number % size)) );
 		if ( pat_foundRoot == NULL ) {
@@ -495,6 +493,8 @@ int main(int argc, char *argv[]) {
 			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 		}
 	}
+	MPI_Finalize();
+	return 0;
 
 	MPI_Gather(&pat_found[inizio_pat], pat_number / size, MPI_UNSIGNED_LONG, pat_foundRoot, pat_number / size, MPI_UNSIGNED_LONG, size-1, MPI_COMM_WORLD);
 	if (rank==size-1){
