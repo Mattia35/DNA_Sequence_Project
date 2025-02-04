@@ -248,12 +248,9 @@ int main(int argc, char *argv[]) {
 	printf("Arguments: Type of mix: %c, Random seed: %lu\n", pat_samp_mix, seed );
 	printf("\n");
 #endif // DEBUG
-
-    if(rank % 2 == 0){
-    CUDA_CHECK_FUNCTION(cudaSetDevice(0));  // Se il rank è pari, usa la GPU 0
-	}else{
-    CUDA_CHECK_FUNCTION(cudaSetDevice(1));  // Se il rank è dispari, usa la GPU 1
-	}
+	int device_count = 0;
+	CUDA_CHECK_FUNCTION(cudaGetDeviceCount(&device_count));
+    CUDA_CHECK_FUNCTION(cudaSetDevice(rank%device_count)); 
 
 	/* 2. Initialize data structures */
 	/* 2.1. Skip allocate and fill sequence */
