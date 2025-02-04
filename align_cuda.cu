@@ -54,10 +54,9 @@ double cp_Wtime(){
  *
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
-__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, int pat_number, int* d_pat_lengths, const char* d_patterns) {
+__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, int seq_length) {
     extern __shared__ char shared_sequence[];  // Shared memory for sequence
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
-    int blockSize = blockDim.x;
     
     int pat = threadId;  // Get the pattern for this thread
     unsigned long start;  // Get the start index for this pattern search
@@ -70,19 +69,19 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     __syncthreads();  // Synchronize threads to ensure all threads have the sequence in shared memory
     
     // Iterate through the pattern for the current position
-	for (start = 0; start <= seq_length - pat_length[pat]; start++) {
+	for (start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		// Check for match for each pattern element
-		for (lind = 0; lind < pat_length[pat]; lind++) {
-			if (shared_sequence[start + lind] != d_patterns[pat * pat_length[pat] + lind]) break;
+		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
+			if (shared_sequence[start + lind] != d_patterns[pat * d_pat_lengths[pat] + lind]) break;
 		}
 		
 		// If a match is found
-		if (lind == pat_length[pat]) {
+		if (lind == d_pat_lengths[pat]) {
 			d_pat_matches[pat]++;  // Atomically increment the match count for the pattern
 			d_pat_found[pat] = start;
 			
 			// Update the seq_matches
-			for (int ind = 0; ind < pat_length[pat]; ind++) {
+			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
 				d_seq_matches[start + ind]++;
 			}
 			break;
@@ -461,7 +460,7 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
-	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, pat_number, d_pat_length, d_pattern);
+	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length);
 	CUDA_CHECK_KERNEL();
 
 	/* 5.2. Copy results back */
