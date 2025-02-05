@@ -54,7 +54,7 @@ double cp_Wtime(){
  *
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
-__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, int seq_length) {
+__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, int seq_length, int pat_number) {
     extern __shared__ char shared_sequence[];  // Shared memory for sequence
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     
@@ -85,6 +85,17 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 				d_seq_matches[start + ind]++;
 			}
 			break;
+		}
+	}
+	__syncthreads();
+	if (threadId == 0){
+		//print per ogni thread il pat_matches
+		printf("Thread %d, pat_matches: %d\n",threadId,*d_pat_matches);
+		for (int i=0; i<seq_length; i++){
+			printf("Thread %d, seq_matches[%d]: %d\n",threadId,i,d_seq_matches[i]);
+		}
+		for (int i=0; i<pat_number; i++){
+			printf("Thread %d, pat_found[%d]: %lu\n",threadId,i,d_pat_found[i]);
 		}
 	}
 }
@@ -456,24 +467,13 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
-	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length);
+	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_KERNEL();
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
-	//printa pat_found, seq_matches e pat_matches per ogni rank
-	printf("Rank %d: ", rank);
-	for (int i=0; i<pat_number; i++){
-		printf("%lu ", pat_found[i]);
-	}
-	printf("\n");
-	for (int i=0; i<seq_length; i++){
-		printf("%d ", seq_matches[i]);
-	}
-	printf("\n");
-	printf("pat_matches: %d\n", pat_matches);
-	
+
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
 	cudaFree( d_seq_matches );
