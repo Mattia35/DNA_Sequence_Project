@@ -98,6 +98,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			printf("Thread %d, pat_found[%d]: %lu\n",threadId,i,d_pat_found[i]);
 		}
 	}
+	__syncthreads();
 }
 
 /*
