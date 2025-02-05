@@ -554,11 +554,6 @@ int main(int argc, char *argv[]) {
     CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	ttotal = cp_Wtime() - ttotal;
 
-	/* 9. Output for leaderboard */
-	printf("\n");
-	/* 9.1. Total computation time */
-	printf("Time: %lf\n", ttotal );
-
 	/* 9.2 Output for leaderboard */
 	if ( rank == 0 ) {
 		printf("\n");
