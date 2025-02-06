@@ -63,12 +63,10 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     int lind;
     
     // Copy sequence to shared memory
-    if (threadIdx.x < seq_length) {
-        shared_sequence[threadIdx.x] = d_sequence[threadIdx.x];
-    }
-	if (threadId < pat_number) {
-        printf("Elemento %d\n", threadId);
-    }
+    for (int i = 0; i < seq_length; i ++) {
+		shared_sequence[i] = d_sequence[i];
+		printf("shared_sequence[%d]: %c\n",i,shared_sequence[i]);
+	}
 
     __syncthreads();  // Synchronize threads to ensure all threads have the sequence in shared memory
     
