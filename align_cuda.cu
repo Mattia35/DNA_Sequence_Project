@@ -472,7 +472,7 @@ int main(int argc, char *argv[]) {
 
 	int *d_pat_found;
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_found, sizeof(unsigned long) * pat_number ) );
-	CUDA_CHECK_FUNCTION( cudaMemset( d_pat_found, NOT_FOUND, sizeof(unsigned long) * pat_number ) );
+	CUDA_CHECK_FUNCTION( cudaMemcpy( d_pat_found, pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyHostToDevice ) );
 
 
 
