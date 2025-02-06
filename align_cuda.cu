@@ -462,6 +462,28 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
+	//print dei risultati
+	if (rank==0){
+		printf("Rank %d: %d\n", rank, pat_matches);
+		for (int i=0; i<pat_number; i++){
+			printf("Rank %d: %lu\n", rank, pat_found[i]);
+		}
+		for (int i=0; i<seq_length; i++){
+			printf("Rank %d: %d\n", rank, seq_matches[i]);
+		}
+	}
+
+	MPI_Barrier( MPI_COMM_WORLD );
+	if (rank==1){
+		printf("Rank %d: %d\n", rank, pat_matches);
+		for (int i=0; i<pat_number; i++){
+			printf("Rank %d: %lu\n", rank, pat_found[i]);
+		}
+		for (int i=0; i<seq_length; i++){
+			printf("Rank %d: %d\n", rank, seq_matches[i]);
+		}
+	}
+
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
 	cudaFree( d_seq_matches );
