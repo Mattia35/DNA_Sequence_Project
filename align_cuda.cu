@@ -55,23 +55,18 @@ double cp_Wtime(){
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
 __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, int seq_length, int pat_number) {
-    extern __shared__ char shared_sequence[];  // Shared memory for sequence
+    extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
-    
-    int pat = threadId;  // Get the pattern for this thread
-    unsigned long start;  // Get the start index for this pattern search
+    int pat = threadId;
+    unsigned long start;
     int lind;
     
     // Copy sequence to shared memory
     if (threadId < seq_length) {
 		shared_sequence[threadId] = d_sequence[threadId];
 	}
-	__syncthreads();
-	printf("Thread %d\n",threadId);
-
-    __syncthreads();  // Synchronize threads to ensure all threads have the sequence in shared memory
-    
-    /*
+    __syncthreads();  
+    if (pat >= pat_number) return;
 	for (start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 	
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -90,25 +85,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			break;
 		}
 	}
-	*/
-	__syncthreads();
-	// printa la lunghezza di seq_matches e pat_found
-	/*
-	if (threadId == 0){
-		printf("Thread %d, seq_length: %d, pat_number: %d\n",threadId,sizeof( d_seq_matches)/sizeof(d_seq_matches[0]),sizeof(d_pat_found)/sizeof(d_pat_found[0]));
-		//stampa seq_length, pat_number
-		printf("Thread %d, seq_length: %d, pat_number: %d\n",threadId,seq_length,pat_number);
-		//print per ogni thread il pat_matches
-		printf("Thread %d, pat_matches: %d\n",threadId,*d_pat_matches);
-		for (int i=0; i<seq_length; i++){
-			printf("Thread %d, seq_matches[%d]: %d\n",threadId,i,d_seq_matches[i]);
-		}
-		for (int i=0; i<pat_number; i++){
-			printf("Thread %d, pat_found[%d]: %lf\n",threadId,i,d_pat_found[i]);
-		}
-	}
-	*/
-	__syncthreads();
 }
 
 /*
@@ -483,11 +459,9 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
-	/*
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
-	*/
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
 	cudaFree( d_seq_matches );
