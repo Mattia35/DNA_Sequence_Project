@@ -67,12 +67,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		shared_sequence[threadId] = d_sequence[threadId];
 	}
 	__syncthreads();
-	//print, se il threadId è 0, shared_sequence
-	if (threadId == 0){
-		for (int i=0; i<seq_length; i++){
-			printf("shared_sequence[%d]: %c\n",i,shared_sequence[i]);
-		}
-	}
+	printf("Thread %d\n",threadId);
 
     __syncthreads();  // Synchronize threads to ensure all threads have the sequence in shared memory
     
@@ -108,7 +103,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			printf("Thread %d, seq_matches[%d]: %d\n",threadId,i,d_seq_matches[i]);
 		}
 		for (int i=0; i<pat_number; i++){
-			printf("Thread %d, pat_found[%d]: %lu\n",threadId,i,d_pat_found[i]);
+			printf("Thread %d, pat_found[%d]: %lf\n",threadId,i,d_pat_found[i]);
 		}
 	}
 	__syncthreads();
