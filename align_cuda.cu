@@ -476,6 +476,14 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
+	//printa la sequenza
+	if (rank==0){
+		for (int i=0; i<seq_length; i++){
+			printf("|%c ",i,sequence[i]);
+		}
+		printf("\n");
+	}
+
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_KERNEL();
 	MPI_Barrier( MPI_COMM_WORLD );
