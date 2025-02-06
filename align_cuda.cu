@@ -63,9 +63,13 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     int lind;
     
     // Copy sequence to shared memory
-    for (int i = 0; i < seq_length; i ++) {
-		shared_sequence[i] = d_sequence[i];
-		if (threadId == 0){
+    if (threadId < seq_length) {
+		shared_sequence[threadId] = d_sequence[threadId];
+	}
+	__syncthreads();
+	//print, se il threadId è 0, shared_sequence
+	if (threadId == 0){
+		for (int i=0; i<seq_length; i++){
 			printf("shared_sequence[%d]: %c\n",i,shared_sequence[i]);
 		}
 	}
@@ -476,13 +480,6 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
-	//printa la sequenza
-	if (rank==0){
-		for (int i=0; i<seq_length; i++){
-			printf("|%c ",sequence[i]);
-		}
-		printf("\n");
-	}
 
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_KERNEL();
