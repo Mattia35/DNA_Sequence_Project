@@ -272,9 +272,14 @@ int main(int argc, char *argv[]) {
 	printf("Arguments: Type of mix: %c, Random seed: %lu\n", pat_samp_mix, seed );
 	printf("\n");
 #endif // DEBUG
-	int device_count = 0;
+	int device_count;
 	CUDA_CHECK_FUNCTION(cudaGetDeviceCount(&device_count));
     CUDA_CHECK_FUNCTION(cudaSetDevice(rank%device_count)); 
+	//printa quanti device ci sono e quale è stato scelto
+	if (rank==0){
+		printf("Device count: %d\n",device_count);
+		printf("Device scelto: %d\n",rank%device_count);
+	}
 
 	/* 2. Initialize data structures */
 	/* 2.1. Skip allocate and fill sequence */
