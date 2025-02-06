@@ -479,7 +479,7 @@ int main(int argc, char *argv[]) {
 	//printa la sequenza
 	if (rank==0){
 		for (int i=0; i<seq_length; i++){
-			printf("|%c ",i,sequence[i]);
+			printf("|%c ",sequence[i]);
 		}
 		printf("\n");
 	}
