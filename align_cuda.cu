@@ -476,7 +476,6 @@ int main(int argc, char *argv[]) {
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_KERNEL();
 	MPI_Barrier( MPI_COMM_WORLD );
-	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
