@@ -93,6 +93,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	*/
 	__syncthreads();
 	// printa la lunghezza di seq_matches e pat_found
+	/*
 	if (threadId == 0){
 		printf("Thread %d, seq_length: %d, pat_number: %d\n",threadId,sizeof( d_seq_matches)/sizeof(d_seq_matches[0]),sizeof(d_pat_found)/sizeof(d_pat_found[0]));
 		//stampa seq_length, pat_number
@@ -106,6 +107,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			printf("Thread %d, pat_found[%d]: %lf\n",threadId,i,d_pat_found[i]);
 		}
 	}
+	*/
 	__syncthreads();
 }
 
