@@ -275,9 +275,6 @@ int main(int argc, char *argv[]) {
 	int device_count;
 	CUDA_CHECK_FUNCTION(cudaGetDeviceCount(&device_count));
     CUDA_CHECK_FUNCTION(cudaSetDevice(rank%device_count)); 
-	//printa quanti device ci sono e quale è stato scelto
-	printf("Device count: %d\n",device_count);
-	printf("Device scelto: %d\n",rank%device_count);
 
 	/* 2. Initialize data structures */
 	/* 2.1. Skip allocate and fill sequence */
@@ -485,7 +482,7 @@ int main(int argc, char *argv[]) {
 	size_t sharedMemSize = seq_length * sizeof(char);
 
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
-	CUDA_CHECK_KERNEL();
+	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
 	/*
