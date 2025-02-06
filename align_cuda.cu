@@ -66,6 +66,9 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (threadIdx.x < seq_length) {
         shared_sequence[threadIdx.x] = d_sequence[threadIdx.x];
     }
+	if (threadId < pat_number) {
+        printf("Elemento %d\n", threadId);
+    }
 
     __syncthreads();  // Synchronize threads to ensure all threads have the sequence in shared memory
     
@@ -473,11 +476,6 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
-	//calcolami il numero di elementi che ha il vettore d_seq_matches
-	int numElements = sizeof(d_seq_matches)/sizeof(d_seq_matches[0]);
-	//calcolami il numero di elementi che ha il vettore d_pat_found
-	int numElements2 = sizeof(d_pat_found)/sizeof(d_pat_found[0]);
-	printf("numElements: %d, numElements2: %d\n",numElements,numElements2);
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_KERNEL();
 	MPI_Barrier( MPI_COMM_WORLD );
