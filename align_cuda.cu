@@ -76,25 +76,26 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 
     __syncthreads();  // Synchronize threads to ensure all threads have the sequence in shared memory
     
-    // Iterate through the pattern for the current position
+    /*
 	for (start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
-		// Check for match for each pattern element
+	
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
 			if (shared_sequence[start + lind] != *d_patterns[pat * d_pat_lengths[pat] + lind]) break;
 		}
 		
-		// If a match is found
+		
 		if (lind == d_pat_lengths[pat]) {
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			
-			// Update the seq_matches
+			
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
 				d_seq_matches[start + ind]++;
 			}
 			break;
 		}
 	}
+	*/
 	__syncthreads();
 	// printa la lunghezza di seq_matches e pat_found
 	if (threadId == 0){
