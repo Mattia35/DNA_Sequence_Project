@@ -63,7 +63,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     // Copy sequence to shared memory
     if (threadId < seq_length) {
 		shared_sequence[threadId] = d_sequence[threadId];
-		printf("threadId: %d - d_sequence[threadId]: %c - shared_sequence[threadId]: %c\n", threadId, d_sequence[threadId], shared_sequence[threadId]);
 	}
 
     __syncthreads();  
@@ -90,7 +89,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 				//printf("shared_sequence[%lu]: %c (ASCII: %d), d_patterns[%d][%lu]: %c (ASCII: %d)\n", start+lind, shared_sequence[start+lind], shared_sequence[start+lind], pat, lind, d_patterns[pat][lind], d_patterns[pat][lind]);
 				if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 			}
-			//printf("\nlind: %lu, d_pat_lengths[%d]: %lu\n", lind, pat, d_pat_lengths[pat]); 
+			printf("\nlind: %lu, d_pat_lengths[%d]: %lu\n", lind, pat, d_pat_lengths[pat]); 
 			if (lind == d_pat_lengths[pat]) {
 				//printf("Pattern %d found at position %lu\n", pat, start);
 				atomicAdd(d_pat_matches,1);
