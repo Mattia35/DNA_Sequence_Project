@@ -58,6 +58,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId;
+	int lind;
     
     // Copy sequence to shared memory
     if (threadId < seq_length) {
@@ -67,7 +68,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (pat >= pat_number) return;
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 	
-		for (int lind = 0; lind < d_pat_lengths[pat]; lind++) {
+		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
 		
