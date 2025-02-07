@@ -65,6 +65,12 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (threadId < seq_length) {
 		shared_sequence[threadId] = d_sequence[threadId];
 	}
+	if (threadId == 0) {
+		//printa d_pat_lengths
+		for (int i=0; i<pat_number; i++){
+			printf("Lunghezza pattern %d: %lu\n", i, d_pat_lengths[i]);
+		}
+	}
     __syncthreads();  
     if (pat >= pat_number) return;
 	for (start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
@@ -462,12 +468,6 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
 	//print dei risultati
-	if (rank==0){
-		//printa pat_length
-		for (int i=0; i<pat_number; i++){
-			printf("pat_length[%d]: %lu\n", i, pat_length[i]);
-		}
-	}
 
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
