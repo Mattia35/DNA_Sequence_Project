@@ -54,7 +54,7 @@ double cp_Wtime(){
  *
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
-__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, int seq_length, int pat_number) {
+__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number) {
     extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId;
@@ -67,24 +67,13 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 
     __syncthreads();  
     if (pat >= pat_number) return;
-	//print dei pattern lengths, solo del primo processo
-	/*
-	if (threadId == 0){
-		printf("Pattern lengths: ");
-		for (int i=0; i<pat_number; i++){
-			printf("%lu ", d_pat_lengths[i]);
-		}
-		printf("---\n");
-	}*/
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
-	
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
-		
-		
 		if (lind == d_pat_lengths[pat]) {
+			printf("Pattern %d found at position %lu\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
@@ -92,17 +81,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			}
 			break;
 		}
-	}
-	//stampa, se il thread è il primo, tutti i pattern
-	if (threadId == 0){
-		for (int i=0; i<pat_number; i++){
-			printf("Pattern %d: \n", i);
-			for (int j=0; j<d_pat_lengths[i]; j++){
-				printf("%c |", d_patterns[i][j]);
-			}
-			printf("\n");
-		}
-		printf("------------------\n");
 	}
 	
 }
@@ -475,25 +453,7 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
-	//se il rank è 0, stampa i pattern lengths
-	/*if (rank==0){
-		printf("Pattern lengths: ");
-		for (int i=0; i<pat_number; i++){
-			printf("%lu ", pat_length[i]);
-		}
-		printf("--------------------\n");
-	}*/
-	if (rank==0){
-		for (int i=0; i<pat_number; i++){
-			printf("Pattern %d: \n", i);
-			for (int j=0; j<pat_length[i]; j++){
-				printf("%c |", pattern[i][j]);
-			}
-			printf("\n");
-		}
-		printf("------------------\n");
-	}	
-	MPI_Barrier( MPI_COMM_WORLD );
+	
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
