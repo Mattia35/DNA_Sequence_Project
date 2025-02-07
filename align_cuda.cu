@@ -68,12 +68,12 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	// Print shared_sequence
 	if (threadId == 0){
 		for (unsigned long i =0; i<seq_length; i++){
-			printf("shared_sequence[%lu]: %c\n", i, shared_sequence[i]);
+			printf("shared_sequence[%lu]: %c d_sequence[%lu]: %c\n", i, shared_sequence[i], i, d_sequence[i]);
 		}
 	}
 	if (threadId == 0){
 		for (int i =0; i<seq_length; i++){
-			printf("shared_sequence[%d]: %c\n", i, shared_sequence[i]);
+			printf("shared_sequence[%d]: %c d_sequence[%d]: %c\n", i, shared_sequence[i], i, d_sequence[i]);
 		}
 	}
 	
