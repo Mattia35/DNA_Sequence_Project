@@ -361,13 +361,7 @@ int main(int argc, char *argv[]) {
 	unsigned long start;
 	int pat;
 	for( pat=0; pat < pat_number; pat++ ) {
-		if (pat == 0) {
-			printf("Sequence: ");
-			for (unsigned long i = 0; i < pat_length[pat]; i++) {
-				printf("%c |", pattern[pat][i]);
-			}
-			printf("\n");
-		}
+		
 		/* 5.1. For each posible starting position */
 		for( start=0; start <= seq_length - pat_length[pat]; start++) {
 

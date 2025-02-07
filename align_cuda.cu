@@ -64,16 +64,18 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (threadId < seq_length) {
 		shared_sequence[threadId] = d_sequence[threadId];
 	}
+
     __syncthreads();  
     if (pat >= pat_number) return;
-	//stampa l'intera sequenza del pattern
-	if (pat == 0) {
-		printf("Sequence: ");
-		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++) {
-			printf("%c |", d_patterns[pat][i]);
+	//print dei pattern lengths, solo del primo processo
+	if (threadId == 0){
+		printf("Pattern lengths: ");
+		for (int i=0; i<pat_number; i++){
+			printf("%lu ", d_pat_lengths[i]);
 		}
 		printf("\n");
 	}
+	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 	
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -82,7 +84,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		
 		
 		if (lind == d_pat_lengths[pat]) {
-			//printa che lo ha trovato, e quale
 			//printf("Pattern %d found at position %d\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
@@ -462,6 +463,15 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
+	//se il rank è 0, stampa i pattern lengths
+	if (rank==0){
+		printf("Pattern lengths: ");
+		for (int i=0; i<pat_number; i++){
+			printf("%lu ", pat_length[i]);
+		}
+		printf("\n");
+	}
+	printf("--------------------\n");
 
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
