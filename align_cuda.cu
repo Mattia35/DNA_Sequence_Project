@@ -485,15 +485,14 @@ int main(int argc, char *argv[]) {
 	}*/
 	if (rank==0){
 		for (int i=0; i<pat_number; i++){
-				printf("Pattern %d: \n", i);
-				for (int j=0; j<pat_length[i]; j++){
-					printf("%c |", pattern[i][j]);
-				}
-				printf("\n");
+			printf("Pattern %d: \n", i);
+			for (int j=0; j<pat_length[i]; j++){
+				printf("%c |", pattern[i][j]);
 			}
-		}	
+			printf("\n");
+		}
 		printf("------------------\n");
-	}
+	}	
 	MPI_Barrier( MPI_COMM_WORLD );
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
