@@ -64,6 +64,14 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (threadId < seq_length) {
 		shared_sequence[threadId] = d_sequence[threadId];
 	}
+	__syncthreads();
+	// Print shared_sequence
+	if (threadId == 0){
+		for (unsigned long i =0; i<seq_length; i++){
+			printf("shared_sequence[%lu]: %c\n", i, shared_sequence[i]);
+		}
+	}
+	
 
     __syncthreads();  
     if (pat >= pat_number) return;
