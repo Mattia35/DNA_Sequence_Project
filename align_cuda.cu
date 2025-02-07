@@ -93,14 +93,18 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			break;
 		}
 	}
-	//stampa, se il thread è il primo, i pat_found
+	//stampa, se il thread è il primo, tutti i pattern
 	if (threadId == 0){
-		printf("Found start:");
 		for (int i=0; i<pat_number; i++){
-			printf("%lu \n", d_pat_found[i]);
+			printf("Pattern %d: \n", i);
+			for (int j=0; j<d_pat_lengths[i]; j++){
+				printf("%c |", d_patterns[i][j]);
+			}
+			printf("\n");
 		}
-		printf("-------\n");
+		printf("------------------\n");
 	}
+	
 }
 
 /*
@@ -479,6 +483,14 @@ int main(int argc, char *argv[]) {
 		}
 		printf("--------------------\n");
 	}*/
+	for (int i=0; i<pat_number; i++){
+			printf("Pattern %d: \n", i);
+			for (int j=0; j<pat_length[i]; j++){
+				printf("%c |", pattern[i][j]);
+			}
+			printf("\n");
+		}
+		printf("------------------\n");
 
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
