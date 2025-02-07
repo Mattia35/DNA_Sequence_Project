@@ -65,12 +65,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (threadId < seq_length) {
 		shared_sequence[threadId] = d_sequence[threadId];
 	}
-	if (threadId == 0) {
-		//printa d_pat_lengths
-		for (int i=0; i<pat_number; i++){
-			printf("Lunghezza pattern %d: %lu\n", i, d_pat_lengths[i]);
-		}
-	}
     __syncthreads();  
     if (pat >= pat_number) return;
 	for (start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
@@ -81,6 +75,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		
 		
 		if (lind == d_pat_lengths[pat]) {
+			printf("trovato\n");
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
