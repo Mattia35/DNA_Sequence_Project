@@ -62,8 +62,8 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     
     // Copy sequence to shared memory
     if (threadId < seq_length) {
-		printf("threadId: %d", threadId);
 		shared_sequence[threadId] = d_sequence[threadId];
+		printf("threadId: %d - d_sequence[threadId]: %c - shared_sequence[threadId]: %c\n", threadId, d_sequence[threadId], shared_sequence[threadId]);
 	}
 
     __syncthreads();  
