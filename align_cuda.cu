@@ -67,21 +67,40 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 
     __syncthreads();  
     if (pat >= pat_number) return;
-	
-	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
-		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
-		}
-		if (lind == d_pat_lengths[pat]) {
-			printf("Pattern %d found at position %lu\n", pat, start);
-			atomicAdd(d_pat_matches,1);
-			d_pat_found[pat] = start;
-			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
-				d_seq_matches[start + ind]++;
+	if (pat!=1){
+		for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
+			for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
+				if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 			}
-			break;
+			if (lind == d_pat_lengths[pat]) {
+				//printf("Pattern %d found at position %lu\n", pat, start);
+				atomicAdd(d_pat_matches,1);
+				d_pat_found[pat] = start;
+				for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
+					d_seq_matches[start + ind]++;
+				}
+				break;
+			}
 		}
 	}
+	else{
+		for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
+			for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
+				printf("shared_sequence[%lu]: %c, d_patterns[%d][%lu]: %c\n", start+lind, shared_sequence[start+lind], pat, lind, d_patterns[pat][lind]);
+				if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
+			}
+			if (lind == d_pat_lengths[pat]) {
+				printf("Pattern %d found at position %lu\n", pat, start);
+				atomicAdd(d_pat_matches,1);
+				d_pat_found[pat] = start;
+				for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
+					d_seq_matches[start + ind]++;
+				}
+				break;
+			}
+		}
+	}
+	
 	
 }
 
