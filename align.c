@@ -361,7 +361,13 @@ int main(int argc, char *argv[]) {
 	unsigned long start;
 	int pat;
 	for( pat=0; pat < pat_number; pat++ ) {
-
+		if (pat == 0) {
+			printf("Sequence: ");
+			for (unsigned long i = 0; i < pat_length[pat]; i++) {
+				printf("%c |", pattern[pat][i]);
+			}
+			printf("\n");
+		}
 		/* 5.1. For each posible starting position */
 		for( start=0; start <= seq_length - pat_length[pat]; start++) {
 
@@ -373,7 +379,7 @@ int main(int argc, char *argv[]) {
 			/* 5.1.2. Check if the loop ended with a match */
 			if ( lind == pat_length[pat] ) {
 				//printa che lo ha trovato, e quale
-				printf("Pattern %d found at position %ld\n", pat, start);
+				//printf("Pattern %d found at position %ld\n", pat, start);
 				pat_matches++;
 				pat_found[pat] = start;
 				break;

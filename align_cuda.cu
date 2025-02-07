@@ -66,6 +66,14 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	}
     __syncthreads();  
     if (pat >= pat_number) return;
+	//stampa l'intera sequenza del pattern
+	if (pat == 0) {
+		printf("Sequence: ");
+		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++) {
+			printf("%c |", d_patterns[pat][i]);
+		}
+		printf("\n");
+	}
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 	
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -75,7 +83,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		
 		if (lind == d_pat_lengths[pat]) {
 			//printa che lo ha trovato, e quale
-			printf("Pattern %d found at position %d\n", pat, start);
+			//printf("Pattern %d found at position %d\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
