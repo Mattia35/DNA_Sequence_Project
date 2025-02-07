@@ -74,7 +74,8 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		
 		
 		if (lind == d_pat_lengths[pat]) {
-			printf("trovato\n");
+			//printa che lo ha trovato, e quale
+			printf("Pattern %d found at position %d\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
