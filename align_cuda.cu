@@ -97,9 +97,9 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	if (threadId == 0){
 		printf("Found start:");
 		for (int i=0; i<pat_number; i++){
-			printf("%lu ", d_pat_found[i]);
+			printf("%lu \n", d_pat_found[i]);
 		}
-		printf("---\n");
+		printf("-------\n");
 	}
 }
 
