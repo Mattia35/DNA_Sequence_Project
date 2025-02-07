@@ -73,7 +73,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		for (int i=0; i<pat_number; i++){
 			printf("%lu ", d_pat_lengths[i]);
 		}
-		printf("\n");
+		printf("---\n");
 	}
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
@@ -469,9 +469,8 @@ int main(int argc, char *argv[]) {
 		for (int i=0; i<pat_number; i++){
 			printf("%lu ", pat_length[i]);
 		}
-		printf("\n");
+		printf("--------------------\n");
 	}
-	printf("--------------------\n");
 
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
