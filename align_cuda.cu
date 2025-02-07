@@ -465,13 +465,13 @@ int main(int argc, char *argv[]) {
 	int numBlocks = (pat_number + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
 	//se il rank è 0, stampa i pattern lengths
-	if (rank==0){
+	/*if (rank==0){
 		printf("Pattern lengths: ");
 		for (int i=0; i<pat_number; i++){
 			printf("%lu ", pat_length[i]);
 		}
 		printf("--------------------\n");
-	}
+	}*/
 
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
