@@ -77,8 +77,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		if (lind == d_pat_lengths[pat]) {
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
-			
-			
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
 				d_seq_matches[start + ind]++;
 			}
@@ -336,6 +334,7 @@ int main(int argc, char *argv[]) {
 	unsigned long *d_pat_length;
 	const char **d_pattern;
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_length, sizeof(unsigned long) * pat_number ) );
+	CUDA_CHECK_FUNCTION( cudaMemcpy( d_pat_length, pat_length, sizeof(unsigned long) * pat_number, cudaMemcpyHostToDevice ) );
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pattern, sizeof(char *) * pat_number ) );
 
 	char **d_pattern_in_host = (char **)malloc( sizeof(char*) * pat_number );
