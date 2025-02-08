@@ -82,6 +82,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			break;
 		}
 	}
+	__syncthreads();
 	if (threadId == 0){
 		for (int i=0; i<pat_number; i++){
 			printf("Pattern %d found at position %lu\n", i, d_pat_found[i]);
