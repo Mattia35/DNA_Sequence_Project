@@ -510,10 +510,6 @@ int main(int argc, char *argv[]) {
 	}
 	if (rank==0){
 		MPI_Recv(pat_found_res, pat_number, MPI_UNSIGNED_LONG, size-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-		//printa i risultati
-		for (int i=0; i<pat_number; i++){
-			printf("pat_found_res[%d] = %lu\n", i, pat_found_res[i]);
-		}
 	}
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -522,8 +518,8 @@ int main(int argc, char *argv[]) {
 	unsigned long checksum_matches = 0;
 	unsigned long checksum_found = 0;
 	for( ind=0; ind < pat_number; ind++) {
-		if ( pat_found[ind] != (unsigned long)NOT_FOUND )
-			checksum_found = ( checksum_found + pat_found[ind] ) % CHECKSUM_MAX;
+		if ( pat_found_res[ind] != (unsigned long)NOT_FOUND )
+			checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
 	}
 	for( lind=0; lind < seq_length; lind++) {
 		if ( seq_matches[lind] != NOT_FOUND )
