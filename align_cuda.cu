@@ -57,8 +57,6 @@ double cp_Wtime(){
 __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number) {
     extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
-	//printf("Thread %d\n", threadId);
-	//printf("-----------------\n");
     int pat = threadId;
 	unsigned long lind;
     
@@ -72,13 +70,10 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (pat >= pat_number) return; 
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (pat == 300){
-				printf("Pattern %d, shared_sequence[%lu]: %c   e    d_patterns[%lu][%lu] %c\n", pat, start+lind, shared_sequence[start + lind], start, lind, d_patterns[pat][lind]);
-			}
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
-			//printf("Pattern %d found at position %lu\n", pat, start);
+			printf("pat %d found at %lu\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
