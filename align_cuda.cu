@@ -59,7 +59,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId;
 	unsigned long lind;
-    
+    printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
     // Copy sequence to shared memory
     if (threadId == blockIdx.x * blockDim.x){ 
 		for (unsigned long i =0; i<seq_length; i++){
@@ -67,7 +67,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
     __syncthreads();  
-	printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
+	//printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
     if (pat < inizio || pat >= fine) return;
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -458,13 +458,11 @@ int main(int argc, char *argv[]) {
 	if (rank==size-1){
 		fine = fine + resto;
 	}
-	printf("Rank: %d, inizio: %d, fine: %d\n", rank, inizio, fine);
 	int blockSize = 256;
 	int numBlocks = (inizio - fine + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
 	
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
-	printf("Rank: %d, inizio: %d, fine: %d\n", rank, inizio, fine);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
