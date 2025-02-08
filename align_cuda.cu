@@ -69,14 +69,12 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
     __syncthreads();  
-    if (pat >= pat_number)
-	{
-		printf("Thread %d bannato\n", threadId);
-		return;
-	}
-	__syncthreads(); 
+    if (pat >= pat_number) return; 
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
+			if (pat == 300){
+				printf("Pattern %d, shared_sequence[%lu]: %c   e    d_patterns[%lu][%lu] %c\n", pat, start+lind, shared_sequence[start + lind], start, lind, d_patterns[pat][lind]);
+			}
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
