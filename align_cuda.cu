@@ -26,7 +26,7 @@
 #define CUDA_CHECK_KERNEL( )	{ cudaError_t check = cudaGetLastError(); if ( check != cudaSuccess ) fprintf(stderr, "CUDA Kernel Error in line: %d, %s\n", __LINE__, cudaGetErrorString(check) ); }
 
 /* Arbitrary value to indicate that no matches are found */
-#define	NOT_FOUND	0
+#define	NOT_FOUND	-1
 
 /* Arbitrary value to restrict the checksums period */
 #define CHECKSUM_MAX	65535
@@ -524,7 +524,7 @@ int main(int argc, char *argv[]) {
 		for( lind=0; lind < seq_length; lind++) {
 			printf("seq_matchesRoot[%lu] = %d\n", lind, seq_matchesRoot[lind]);
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
-				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] ) % CHECKSUM_MAX;
+				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
 		}
 	}
 
