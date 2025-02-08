@@ -26,7 +26,7 @@
 #define CUDA_CHECK_KERNEL( )	{ cudaError_t check = cudaGetLastError(); if ( check != cudaSuccess ) fprintf(stderr, "CUDA Kernel Error in line: %d, %s\n", __LINE__, cudaGetErrorString(check) ); }
 
 /* Arbitrary value to indicate that no matches are found */
-#define	NOT_FOUND	-1
+#define	NOT_FOUND	0
 
 /* Arbitrary value to restrict the checksums period */
 #define CHECKSUM_MAX	65535
