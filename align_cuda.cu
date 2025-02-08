@@ -67,6 +67,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
     __syncthreads();  
+	printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
     if (pat < inizio || pat >= fine) return;
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
