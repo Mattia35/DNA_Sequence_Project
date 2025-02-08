@@ -458,7 +458,7 @@ int main(int argc, char *argv[]) {
 	if (rank==size-1){
 		fine = fine + resto;
 	}
-
+	printf("Rank: %d, inizio: %d, fine: %d\n", rank, inizio, fine);
 	int blockSize = 256;
 	int numBlocks = (inizio - fine + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
