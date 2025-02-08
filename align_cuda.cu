@@ -469,22 +469,6 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
-	
-	printf("-------------\n");
-	//stampa, se il rank è 0, pat_found
-	if (rank==0){
-		printf("Rank %d\n", rank);
-		for (int i=0; i<pat_number; i++){
-			printf("Pattern %d found at position %lu\n", i, pat_found[i]);
-		}
-	}
-	MPI_Barrier( MPI_COMM_WORLD );
-	if (rank==size-1){
-		printf("Rank %d\n", rank);
-		for (int i=0; i<pat_number; i++){
-			printf("Pattern %d found at position %lu\n", i, pat_found[i]);
-		}
-	}
 
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
@@ -515,14 +499,15 @@ int main(int argc, char *argv[]) {
 
 	MPI_Gather(&pat_found[inizio], pat_number / size, MPI_UNSIGNED_LONG, pat_foundRoot, pat_number / size, MPI_UNSIGNED_LONG, size-1, MPI_COMM_WORLD);
 	if (rank==size-1){
-		for (int i=0; i<pat_number / size; i++){
+		for (int i=0; i<(pat_number-(pat_number % size)); i++){
 			pat_found_res[i]=pat_foundRoot[i];
 		}
-		for (int i=pat_number / size; i<(pat_number-(pat_number % size)); i++){
+		for (int i=(pat_number-(pat_number % size)); i<pat_number; i++){
 			pat_found_res[i]=pat_found[i];
 		}
-		for (int i=pat_number / size; i<(pat_number-(pat_number % size)); i++){
-			pat_found_res[i+(pat_number % size)]=pat_foundRoot[i];
+		//printa ogni elemento di pat_found_res
+		for (int i=0; i<pat_number; i++){
+			printf("pat_found_res[%d] = %lu\n", i, pat_found_res[i]);
 		}
 		MPI_Request request;
         MPI_Isend(pat_found_res, pat_number, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD, &request);
