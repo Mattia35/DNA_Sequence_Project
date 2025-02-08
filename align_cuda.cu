@@ -505,10 +505,6 @@ int main(int argc, char *argv[]) {
 		for (int i=(pat_number-(pat_number % size)); i<pat_number; i++){
 			pat_found_res[i]=pat_found[i];
 		}
-		//printa ogni elemento di pat_found_res
-		for (int i=0; i<pat_number; i++){
-			printf("pat_found_res[%d] = %lu\n", i, pat_found_res[i]);
-		}
 		MPI_Request request;
         MPI_Isend(pat_found_res, pat_number, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD, &request);
 	}
@@ -523,7 +519,7 @@ int main(int argc, char *argv[]) {
 	unsigned long checksum_found = 0;
 	for( ind=0; ind < pat_number; ind++) {
 		if ( pat_found[ind] != (unsigned long)NOT_FOUND )
-			checksum_found = ( checksum_found + pat_found[ind] ) % CHECKSUM_MAX;
+			checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
 	}
 	for( lind=0; lind < seq_length; lind++) {
 		if ( seq_matches[lind] != NOT_FOUND )
