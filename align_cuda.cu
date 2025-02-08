@@ -63,7 +63,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	unsigned long lind;
     
     // Copy sequence to shared memory
-    if (threadId == 0){ 
+    if (threadId == blockIdx.x * blockDim.x){ 
 		for (unsigned long i =0; i<seq_length; i++){
 			shared_sequence[i] = d_sequence[i];
 		}
