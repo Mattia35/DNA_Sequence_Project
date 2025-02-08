@@ -74,13 +74,17 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
-			printf("Pattern %d found at position %lu\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
 				d_seq_matches[start + ind]++;
 			}
 			break;
+		}
+	}
+	if (threadId == 0){
+		for (int i=0; i<pat_number; i++){
+			printf("Pattern %d found at position %lu\n", i, d_pat_found[i]);
 		}
 	}
 }
