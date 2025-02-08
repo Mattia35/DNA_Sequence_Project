@@ -57,11 +57,11 @@ double cp_Wtime(){
 __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
     extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
-    int pat = threadId;
+    int pat = threadId + inizio;
 	unsigned long lind;
-    printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
+    //printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
     // Copy sequence to shared memory
-    if (threadId == blockIdx.x * blockDim.x){ 
+    if (threadId == 0){ 
 		for (unsigned long i =0; i<seq_length; i++){
 			shared_sequence[i] = d_sequence[i];
 		}
