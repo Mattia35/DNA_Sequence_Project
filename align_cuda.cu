@@ -522,7 +522,6 @@ int main(int argc, char *argv[]) {
 			
 		}
 		for( lind=0; lind < seq_length; lind++) {
-			printf("seq_matchesRoot[%lu] = %d\n", lind, seq_matchesRoot[lind]);
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
 		}
