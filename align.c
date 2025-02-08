@@ -384,6 +384,9 @@ int main(int argc, char *argv[]) {
 			increment_matches( pat, pat_found, pat_length, seq_matches );
 		}
 	}
+	for (int i=0; i<pat_number; i++){
+		printf("pat_found[%d] = %lu\n", i, pat_found[i]);
+	}
 
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
