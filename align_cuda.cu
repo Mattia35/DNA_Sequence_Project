@@ -74,7 +74,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
-			//printf("Pattern %d found at position %lu\n", pat, start);
+			printf("Pattern %d found at position %lu\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
@@ -471,6 +471,7 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
 	
 	//stampa, se il rank è 0, pat_found
+	/*
 	if (rank==0){
 		printf("Rank %d\n", rank);
 		for (int i=0; i<pat_number; i++){
@@ -483,7 +484,7 @@ int main(int argc, char *argv[]) {
 		for (int i=0; i<pat_number; i++){
 			printf("Pattern %d found at position %lu\n", i, pat_found[i]);
 		}
-	}
+	}*/
 
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
