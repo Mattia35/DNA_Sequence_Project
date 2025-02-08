@@ -447,7 +447,7 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_matches, sizeof(int)) );
 	CUDA_CHECK_FUNCTION( cudaMemset( d_pat_matches, 0, sizeof(int)) );
 
-	int *d_pat_found;
+	unsigned long *d_pat_found;
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_found, sizeof(unsigned long) * pat_number ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( d_pat_found, pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyHostToDevice ) );
 
