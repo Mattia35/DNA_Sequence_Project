@@ -517,13 +517,15 @@ int main(int argc, char *argv[]) {
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
 	unsigned long checksum_found = 0;
-	for( ind=0; ind < pat_number; ind++) {
-		if ( pat_found_res[ind] != (unsigned long)NOT_FOUND )
-			checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
-	}
-	for( lind=0; lind < seq_length; lind++) {
-		if ( seq_matches[lind] != NOT_FOUND )
-			checksum_matches = ( checksum_matches + seq_matches[lind] ) % CHECKSUM_MAX;
+	if (rank==0){
+		for( ind=0; ind < pat_number; ind++) {
+			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND )
+				checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
+		}
+		for( lind=0; lind < seq_length; lind++) {
+			if ( seq_matchesRoot[lind] != NOT_FOUND )
+				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] ) % CHECKSUM_MAX;
+		}
 	}
 
 #ifdef DEBUG
