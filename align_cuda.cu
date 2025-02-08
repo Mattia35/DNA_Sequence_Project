@@ -519,8 +519,10 @@ int main(int argc, char *argv[]) {
 		for( ind=0; ind < pat_number; ind++) {
 			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND )
 				checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
+			
 		}
 		for( lind=0; lind < seq_length; lind++) {
+			printf("seq_matchesRoot[%lu] = %d\n", lind, seq_matchesRoot[lind]);
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] ) % CHECKSUM_MAX;
 		}
