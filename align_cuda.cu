@@ -59,15 +59,13 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId + inizio;
 	unsigned long lind;
-    //printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
     // Copy sequence to shared memory
     if (threadId == 0){ 
 		for (unsigned long i =0; i<seq_length; i++){
 			shared_sequence[i] = d_sequence[i];
 		}
 	}
-    __syncthreads();  
-	//printf("Thread %d, pat %d, inizio %d, fine %d\n", threadId, pat, inizio, fine);
+    __syncthreads();
     if (pat < inizio || pat >= fine) return;
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -76,9 +74,9 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		if (lind == d_pat_lengths[pat]) {
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
-			//printf("Pattern %d found at position %lu\n", pat, d_pat_found[pat]);
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
-				d_seq_matches[start + ind]++;
+				atomicAdd(d_seq_matches[start + ind],1);
+				//d_seq_matches[start + ind]++;
 			}
 			break;
 		}
