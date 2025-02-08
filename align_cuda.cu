@@ -54,7 +54,7 @@ double cp_Wtime(){
  *
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
-__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number) {
+__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
     extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId;
@@ -67,13 +67,12 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
     __syncthreads();  
-    if (pat >= pat_number) return; 
+    if (pat < inizio || pat >= fine) return;
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
-			printf("pat %d found at %lu\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
@@ -449,11 +448,20 @@ int main(int argc, char *argv[]) {
 
 	/* 5. Process patterns */
 	/* 5.1. Launch kernel */
+
+	int parziale = pat_number / size;
+	int resto = pat_number % size;
+	int inizio = rank * parziale;
+	int fine = (rank+1) * parziale;
+	if (rank==size-1){
+		fine = fine + resto;
+	}
+
 	int blockSize = 256;
-	int numBlocks = (pat_number + blockSize - 1) / blockSize;
+	int numBlocks = (inizio - fine + blockSize - 1) / blockSize;
 	size_t sharedMemSize = seq_length * sizeof(char);
 	
-	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
+	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
@@ -471,8 +479,6 @@ int main(int argc, char *argv[]) {
 	unsigned long *pat_foundRoot;
 	int *seq_matchesRoot;
 	unsigned long *pat_found_res;
-	int massima_lunghezza_pat = (pat_number / size) + (pat_number % size);
-	int inizio_pat = rank * massima_lunghezza_pat;
 	if(rank==0 or rank==size-1){
 		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-(pat_number % size)) );
 		if ( pat_foundRoot == NULL ) {
@@ -491,7 +497,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	MPI_Gather(&pat_found[inizio_pat], pat_number / size, MPI_UNSIGNED_LONG, pat_foundRoot, pat_number / size, MPI_UNSIGNED_LONG, size-1, MPI_COMM_WORLD);
+	MPI_Gather(&pat_found[inizio], pat_number / size, MPI_UNSIGNED_LONG, pat_foundRoot, pat_number / size, MPI_UNSIGNED_LONG, size-1, MPI_COMM_WORLD);
 	if (rank==size-1){
 		for (int i=0; i<pat_number / size; i++){
 			pat_found_res[i]=pat_foundRoot[i];
