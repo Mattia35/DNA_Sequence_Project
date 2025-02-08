@@ -54,7 +54,7 @@ double cp_Wtime(){
  *
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
-__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, int* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
+__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
     extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId + inizio;
