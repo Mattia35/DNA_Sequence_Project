@@ -75,7 +75,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
-				atomicAdd(d_seq_matches[start + ind],1);
+				atomicAdd(&d_seq_matches[start + ind],1);
 				//d_seq_matches[start + ind]++;
 			}
 			break;
