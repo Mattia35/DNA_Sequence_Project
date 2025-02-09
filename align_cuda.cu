@@ -472,7 +472,12 @@ int main(int argc, char *argv[]) {
 	int blockSize = 256;
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
 	printf("Rank: %d, Inizio: %d, Fine: %d, numBlocks: %d\n", rank, inizio, fine, numBlocks);
+	
 	size_t sharedMemSize = seq_length * sizeof(char);
+	for (int i = 0; i < pat_number; i++){
+		sharedMemSize += pat_length[i] * sizeof(char);
+	}
+	
 	
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
