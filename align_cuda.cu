@@ -56,8 +56,6 @@ double cp_Wtime(){
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
 __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
     extern __shared__ char shared_sequence[];
-	//crea una copia in shared memory dei pattern
-	extern __shared__ char shared_patterns[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId + inizio;
 	unsigned long lind;
@@ -66,24 +64,13 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		for (unsigned long i =0; i<seq_length; i++){
 			shared_sequence[i] = d_sequence[i];
 		}
-		int offset = 0;
-		for (int i = 0; i < pat_number; i++){
-			for (int j = 0; j < d_pat_lengths[i]; j++){
-				shared_patterns[offset+j] = d_patterns[i][j];
-			}
-			offset += d_pat_lengths[i];
-		}
 	}
     __syncthreads();
-	int offset = 0;
     if (pat < inizio || pat >= fine) return;
-	//offset settato al pattern corrente
-	for (int i = 0; i < pat; i++){
-		offset += d_pat_lengths[i];
-	}
+	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (shared_sequence[start + lind] != shared_patterns[offset+lind]) break;
+			if (shared_sequence[start + lind] != shared_patterns[pat][lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
 			atomicAdd(d_pat_matches,1);
@@ -472,13 +459,7 @@ int main(int argc, char *argv[]) {
 	}
 	int blockSize = 256;
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
-	printf("Rank: %d, Inizio: %d, Fine: %d, numBlocks: %d\n", rank, inizio, fine, numBlocks);
-	
 	size_t sharedMemSize = seq_length * sizeof(char);
-	for (int i = 0; i < pat_number; i++){
-		sharedMemSize += pat_length[i] * sizeof(char);
-	}
-	
 	
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
