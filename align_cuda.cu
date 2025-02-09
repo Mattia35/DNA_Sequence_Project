@@ -75,6 +75,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
     __syncthreads();
+	int offset = 0;
     if (pat < inizio || pat >= fine) return;
 	//offset settato al pattern corrente
 	for (int i = 0; i < pat; i++){
