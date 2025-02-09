@@ -70,7 +70,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (shared_sequence[start + lind] != shared_patterns[pat][lind]) break;
+			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
 			atomicAdd(d_pat_matches,1);
