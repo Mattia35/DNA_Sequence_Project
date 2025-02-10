@@ -393,7 +393,7 @@ int main(int argc, char *argv[]) {
 			checksum_found = ( checksum_found + pat_found[ind] ) % CHECKSUM_MAX;
 	}
 	for( lind=0; lind < seq_length; lind++) {
-		printf("seq_matches[%d] = %d\n", lind, seq_matches[lind]);
+		printf("seq_matches[%ld] = %d\n", lind, seq_matches[lind]);
 		if ( seq_matches[lind] != NOT_FOUND )
 			checksum_matches = ( checksum_matches + seq_matches[lind] ) % CHECKSUM_MAX;
 	}
