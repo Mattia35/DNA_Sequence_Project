@@ -526,6 +526,7 @@ int main(int argc, char *argv[]) {
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
 				printf("checksum_matches: %lu\n", checksum_matches);
+				printf("checksum_matches: %lu\n", ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX);
 		}
 	}
 
