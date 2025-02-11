@@ -68,7 +68,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	__syncthreads();
 
 	// Copy patterns to shared memory
-	int offset = seq_length-1;
+	int offset = seq_length;
 	if (pat >= inizio && pat < fine){
 		int contatore = 0;
 		while (contatore < pat){
