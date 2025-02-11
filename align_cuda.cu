@@ -523,12 +523,9 @@ int main(int argc, char *argv[]) {
 			
 		}
 		for( lind=0; lind < seq_length; lind++) {
+			printf("%d\n", seq_matchesRoot[lind]);
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
-				printf("seq_matchesRoot[lind] = %d\n", seq_matchesRoot[lind]);
-				printf("checksum_matches = %lu\n", checksum_matches);
-				printf("size-1 = %d \n", size-1);
-		}
 	}
 
 #ifdef DEBUG
