@@ -89,6 +89,14 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 		printf("\n");
 	}
+	//printami la sequenza
+	if (pat==0){
+		printf("Sequenza: ");
+		for (unsigned long i = 0; i < seq_length; i++){
+			printf("%c |", shared_sequence[i]);
+		}
+		printf("\n");
+	}
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -544,7 +552,7 @@ int main(int argc, char *argv[]) {
 	if (rank==0){
 		for( ind=0; ind < pat_number; ind++) {
 			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND ){
-				printf("Found pattern %d at position %lu\n", ind, pat_found_res[ind] );
+				//printf("Found pattern %d at position %lu\n", ind, pat_found_res[ind] );
 				checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
 			}
 			
