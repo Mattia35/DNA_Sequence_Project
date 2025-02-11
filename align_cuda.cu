@@ -67,6 +67,14 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
 	__syncthreads();
+	//stampa il primo pattern
+	if (pat==0){
+		printf("Pattern 0: ");
+		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
+			printf("%c |", d_patterns[pat][i]);
+		}
+		printf("\n");
+	}
 	// Copy patterns to shared memory
 	int offset = 0;
 	if (pat >= inizio && pat < fine){
