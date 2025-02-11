@@ -462,7 +462,6 @@ int main(int argc, char *argv[]) {
 
 	/* 5. Process patterns */
 	/* 5.1. Launch kernel */
-	printf("Rank %d\n", rank);
 	int parziale = pat_number / size;
 	int resto = pat_number % size;
 	int inizio = rank * parziale + resto;
@@ -476,8 +475,9 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<pat_number; i++){
 		sharedMemSize += pat_length[i] * sizeof(char);
 	}
-	
+	printf("Rank %d\n", rank);
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
+	printf("Rank %d\n", rank);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
