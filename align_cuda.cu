@@ -55,21 +55,20 @@ double cp_Wtime(){
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
 __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
-    extern __shared__ char shared_sequence[];
-	extern __shared__ char shared_pattern[];
+    extern __shared__ char shared_sequence_and_pattern[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId + inizio;
 	unsigned long lind;
     // Copy sequence to shared memory
     if (threadIdx.x == 0){ 
 		for (unsigned long i =0; i<seq_length; i++){
-			shared_sequence[i] = d_sequence[i];
+			shared_sequence_and_pattern[i] = d_sequence[i];
 		}
 	}
 	__syncthreads();
 
 	// Copy patterns to shared memory
-	int offset = 0;
+	int offset = seq_length-1;
 	if (pat >= inizio && pat < fine){
 		int contatore = 0;
 		while (contatore < pat){
@@ -77,30 +76,14 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			contatore++;
 		}
 		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
-			shared_pattern[i + offset] = d_patterns[pat][i];
+			shared_sequence_and_pattern[i + offset] = d_patterns[pat][i];
 		}
 	}
     else return;
-	//stampa il primo pattern
-	if (pat==0){
-		printf("Pattern 0: ");
-		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
-			printf("%c |", shared_pattern[offset+i]);
-		}
-		printf("\n");
-	}
-	//printami la sequenza
-	if (pat==0){
-		printf("Sequenza: ");
-		for (unsigned long i = 0; i < seq_length; i++){
-			printf("%c |", shared_sequence[i]);
-		}
-		printf("\n");
-	}
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (shared_sequence[start + lind] != shared_pattern[offset + lind]) break;
+			if (shared_sequence_and_pattern[start + lind] != shared_sequence_and_pattern[offset + lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
 			atomicAdd(d_pat_matches,1);
