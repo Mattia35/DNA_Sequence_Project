@@ -515,8 +515,9 @@ int main(int argc, char *argv[]) {
 
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
-	unsigned long sesso = 0;
 	unsigned long checksum_found = 0;
+	MPI_Barrier( MPI_COMM_WORLD );
+    CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	if (rank==0){
 		for( ind=0; ind < pat_number; ind++) {
 			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND )
@@ -527,8 +528,6 @@ int main(int argc, char *argv[]) {
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
 				sesso = checksum_matches;
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
-				printf("---\nchecksum_matches: %lu\n", ( sesso + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX);
-				printf("checksum_matches: %lu\n", checksum_matches);
 		}
 	}
 
