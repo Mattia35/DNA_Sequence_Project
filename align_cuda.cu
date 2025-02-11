@@ -510,13 +510,13 @@ int main(int argc, char *argv[]) {
 			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 		}
 	}
-	//stampa i pat_found se il rank è 1
-	for (int i=0; i<pat_number; i++){
-		if (rank==1){
-			printf("Pattern %d found at position %lu\n", i, pat_found[i]);
+	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+	//stampa pat_foundRoot
+	for (int i=0; i<pat_number-resto; i++){
+		if (rank==0){
+			printf("pat_foundRoot[%d] = %lu\n", i, pat_foundRoot[i]);
 		}
 	}
-	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 	if (rank==0){
 		for (int i=0; i<parziale; i++){
 			pat_found_res[i]=pat_foundRoot[i];
