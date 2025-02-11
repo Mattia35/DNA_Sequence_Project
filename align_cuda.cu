@@ -514,7 +514,7 @@ int main(int argc, char *argv[]) {
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	/* 7. Check sums */
-	unsigned long checksum_matches = 0;
+	volatile unsigned long checksum_matches = 0;
 	unsigned long checksum_found = 0;
 	if (rank==0){
 		for( ind=0; ind < pat_number; ind++) {
@@ -524,7 +524,7 @@ int main(int argc, char *argv[]) {
 		}
 		for( lind=0; lind < seq_length; lind++) {
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
-				printf("(checksum_matches + seq_matchesRoot[lind] + 1*(size-1)), CHECKSUM_MAX = (%lu + %d + 1*%d), %d = %lu\n", checksum_matches, seq_matchesRoot[lind], size-1, CHECKSUM_MAX, ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX);
+				//printf("(checksum_matches + seq_matchesRoot[lind] + 1*(size-1)), CHECKSUM_MAX = (%lu + %d + 1*%d), %d = %lu\n", checksum_matches, seq_matchesRoot[lind], size-1, CHECKSUM_MAX, ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX);
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
 		}
 	}
