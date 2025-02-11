@@ -475,6 +475,9 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<pat_number; i++){
 		sharedMemSize += pat_length[i] * sizeof(char);
 	}
+	cudaDeviceProp prop;
+	cudaGetDeviceProperties(&prop, 0);
+	printf("Shared memory per block: %zu bytes, shared memory required: %zu bytes\n", prop.sharedMemPerBlock, sharedMemSize);
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 
 	cudaError_t err = cudaGetLastError();
