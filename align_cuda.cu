@@ -80,6 +80,16 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
     else return;
+	//printa ogni pattern
+	if (pat==0){
+		for (int i = 0; i<pat_number; i++){
+			printf("Pattern %d: ", i);
+			for (int j = 0; j<d_pat_lengths[i]; j++){
+				printf("%c", shared_sequence_and_pattern[offset + j]);
+			}
+			printf("\n");
+		}
+	}
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -487,14 +497,8 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
-	printf("numBlocks: %d, blockSize: %d, sharedMemSize: %lu, maxSharedMem: %lu\n", numBlocks, blockSize, sharedMemSize, maxSharedMem);
-
-	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	
-	 cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        printf("CUDA Error: %s\n", cudaGetErrorString(err));
-    }
+	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
