@@ -524,9 +524,14 @@ int main(int argc, char *argv[]) {
 			pat_found_res[i]=pat_foundRoot[i];
 		}
 	}
+	//printa pat_found_res
+	for (int i=0; i<pat_number; i++){
+		if (rank==0){
+			printf("Pattern %d found at position %lu\n", i, pat_found_res[i]);
+		}
+	}
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
 	unsigned long checksum_found = 0;
