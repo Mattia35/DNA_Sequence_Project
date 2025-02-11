@@ -63,6 +63,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (threadIdx.x == 0){ 
 		for (unsigned long i =0; i<seq_length; i++){
 			shared_sequence_and_pattern[i] = d_sequence[i];
+			printf("%c, %c\n", shared_sequence_and_pattern[i], d_sequence[i]);
 		}
 	}
 	__syncthreads();
@@ -81,6 +82,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	}
     else return;
 	//printa ogni pattern
+	/*
 	if (pat==0){
 		for (int i = 0; i<pat_number; i++){
 			printf("Pattern %d: ", i);
@@ -89,7 +91,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			}
 			printf("\n");
 		}
-	}
+	}*/
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
