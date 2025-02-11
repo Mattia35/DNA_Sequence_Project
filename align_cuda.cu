@@ -77,9 +77,14 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
 			shared_pattern[i + offset] = d_patterns[pat][i];
+			if (pat==0){
+				printf("shared_pattern[%d] = %c\n", i + offset, d_patterns[pat][i]);
+				printf("shared_pattern[%d] = %c\n\n\n", i+offset, shared_pattern[i+offset]);
+			}
 		}
 	}
     else return;
+	
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
