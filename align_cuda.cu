@@ -67,14 +67,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
 	__syncthreads();
-	//stampa il primo pattern
-	if (pat==0){
-		printf("Pattern 0: ");
-		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
-			printf("%c |", d_patterns[pat][i]);
-		}
-		printf("\n");
-	}
+
 	// Copy patterns to shared memory
 	int offset = 0;
 	if (pat >= inizio && pat < fine){
@@ -85,14 +78,17 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
 			shared_pattern[i + offset] = d_patterns[pat][i];
-			if (pat==0){
-				printf("shared_pattern[%d] = %c\n", i + offset, d_patterns[pat][i]);
-				printf("shared_pattern[%d] = %c\n\n\n", i+offset, shared_pattern[i+offset]);
-			}
 		}
 	}
     else return;
-	
+	//stampa il primo pattern
+	if (pat==0){
+		printf("Pattern 0: ");
+		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
+			printf("%c |", shared_pattern[offset+i]);
+		}
+		printf("\n");
+	}
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
