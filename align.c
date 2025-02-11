@@ -384,13 +384,6 @@ int main(int argc, char *argv[]) {
 			increment_matches( pat, pat_found, pat_length, seq_matches );
 		}
 	}
-	for (int i=0; i<pat_number; i++){
-		printf("Pattern %d: ", i);
-		for (int j=0; j<pat_length[i]; j++){
-			printf("%c", pattern[i][j]);
-		}
-		printf("\n");
-	}
 
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
