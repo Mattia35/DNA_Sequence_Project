@@ -484,7 +484,12 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
-
+	//stampa pat_found se il rank 1
+	for (int i=0; i<pat_number; i++){
+		if (rank==1){
+			printf("Rank %d: Found pattern %d at position %lu\n", rank, i, pat_found[i]);
+		}
+	}
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
 	cudaFree( d_seq_matches );
@@ -522,12 +527,6 @@ int main(int argc, char *argv[]) {
 		}
 		for (int i=parziale; i< parziale - resto; i++){
 			pat_found_res[i]=pat_foundRoot[i];
-		}
-	}
-	//printa pat_found_res
-	for (int i=0; i<pat_number; i++){
-		if (rank==1){
-			printf("Pattern %d found at position %lu\n", i, pat_found_res[i]);
 		}
 	}
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
