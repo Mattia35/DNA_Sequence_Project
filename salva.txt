@@ -465,10 +465,10 @@ int main(int argc, char *argv[]) {
 
 	int parziale = pat_number / size;
 	int resto = pat_number % size;
-	int inizio = rank * parziale + resto;
-	int fine = (rank+1) * parziale + resto;
-	if (rank==0){
-		inizio = 0;
+	int inizio = rank * parziale;
+	int fine = (rank+1) * parziale;
+	if (rank==size-1){
+		fine = fine + resto;
 	}
 	int blockSize = 256;
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
@@ -494,8 +494,8 @@ int main(int argc, char *argv[]) {
 	unsigned long *pat_foundRoot;
 	int *seq_matchesRoot;
 	unsigned long *pat_found_res;
-	if(rank==0){
-		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-resto) );
+	if(rank==0 or rank==size-1){
+		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-(pat_number % size)) );
 		if ( pat_foundRoot == NULL ) {
 			fprintf(stderr,"\n-- Error allocating aux pattern structure for size: %d\n", pat_number );
 			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
@@ -512,17 +512,19 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-	if (rank==0){
-		for (int i=0; i<parziale; i++){
+	MPI_Gather(&pat_found[inizio], pat_number / size, MPI_UNSIGNED_LONG, pat_foundRoot, pat_number / size, MPI_UNSIGNED_LONG, size-1, MPI_COMM_WORLD);
+	if (rank==size-1){
+		for (int i=0; i<(pat_number-(pat_number % size)); i++){
 			pat_found_res[i]=pat_foundRoot[i];
 		}
-		for (int i=parziale; i<parziale + resto; i++){
+		for (int i=(pat_number-(pat_number % size)); i<pat_number; i++){
 			pat_found_res[i]=pat_found[i];
 		}
-		for (int i=parziale; i< parziale - resto; i++){
-			pat_found_res[i]=pat_foundRoot[i];
-		}
+		MPI_Request request;
+        MPI_Isend(pat_found_res, pat_number, MPI_UNSIGNED_LONG, 0, 0, MPI_COMM_WORLD, &request);
+	}
+	if (rank==0){
+		MPI_Recv(pat_found_res, pat_number, MPI_UNSIGNED_LONG, size-1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
