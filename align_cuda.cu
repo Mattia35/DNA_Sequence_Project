@@ -475,15 +475,19 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<pat_number; i++){
 		sharedMemSize += pat_length[i] * sizeof(char);
 	}
-	printf("Rank %d\n", rank);
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
-	printf("Rank %d\n", rank);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
+	//stampa pat_found
+	if (rank==0){
+		for (int i=0; i<pat_number; i++){
+			printf("Found pattern %d at position %lu\n", i, pat_found[i]);
+		}
+	}
 	cudaFree( d_pat_length );
 	cudaFree( d_pattern );
 	cudaFree( d_seq_matches );
