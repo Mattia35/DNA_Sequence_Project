@@ -79,11 +79,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			shared_pattern[i + offset] = d_patterns[pat][i];
 		}
 	}
-	if (pat==0){
-		for (int i = 0; i < d_pat_lengths[pat]; i++){
-			printf ("shared_patthern[%d] = %c\n", i, shared_pattern[i]);
-		}
-	}
     else return;
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
@@ -91,6 +86,8 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			if (shared_sequence[start + lind] != shared_pattern[offset + lind]) break;
 		}
 		if (lind == d_pat_lengths[pat]) {
+			//è stato trovato il pat
+			printf("pat %d trovato in posizione %lu\n", pat, start);
 			atomicAdd(d_pat_matches,1);
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
