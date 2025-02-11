@@ -511,7 +511,7 @@ int main(int argc, char *argv[]) {
 			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 		}
 	}
-
+	
 	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 	if (rank==0){
 		for (int i=0; i<parziale; i++){
@@ -526,7 +526,7 @@ int main(int argc, char *argv[]) {
 	}
 	//printa pat_found_res
 	for (int i=0; i<pat_number; i++){
-		if (rank==0){
+		if (rank==1){
 			printf("Pattern %d found at position %lu\n", i, pat_found_res[i]);
 		}
 	}
