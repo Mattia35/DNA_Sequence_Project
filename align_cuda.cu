@@ -534,9 +534,10 @@ int main(int argc, char *argv[]) {
 	unsigned long checksum_found = 0;
 	if (rank==0){
 		for( ind=0; ind < pat_number; ind++) {
-			printf("Found pattern %d at position %lu\n", ind, pat_found_res[ind] );
-			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND )
+			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND ){
+				printf("Found pattern %d at position %lu\n", ind, pat_found_res[ind] );
 				checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
+			}
 			
 		}
 		for( lind=0; lind < seq_length; lind++) {
