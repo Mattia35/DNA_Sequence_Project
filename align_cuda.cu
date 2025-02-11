@@ -462,7 +462,7 @@ int main(int argc, char *argv[]) {
 
 	/* 5. Process patterns */
 	/* 5.1. Launch kernel */
-
+	printf("Rank %d\n", rank);
 	int parziale = pat_number / size;
 	int resto = pat_number % size;
 	int inizio = rank * parziale + resto;
