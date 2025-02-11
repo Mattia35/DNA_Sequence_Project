@@ -511,12 +511,6 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-	//stampa pat_foundRoot
-	for (int i=0; i<pat_number-resto; i++){
-		if (rank==0){
-			printf("pat_foundRoot[%d] = %lu\n", i, pat_foundRoot[i]);
-		}
-	}
 	if (rank==0){
 		for (int i=0; i<parziale; i++){
 			pat_found_res[i]=pat_foundRoot[i];
@@ -524,7 +518,7 @@ int main(int argc, char *argv[]) {
 		for (int i=parziale; i<parziale + resto; i++){
 			pat_found_res[i]=pat_found[i];
 		}
-		for (int i=parziale; i< parziale - resto; i++){
+		for (int i=parziale; i< pat_number - resto; i++){
 			pat_found_res[i+ resto]=pat_foundRoot[i];
 		}
 	}
