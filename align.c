@@ -390,11 +390,11 @@ int main(int argc, char *argv[]) {
 	unsigned long checksum_found = 0;
 	for( ind=0; ind < pat_number; ind++) {
 		if ( pat_found[ind] != (unsigned long)NOT_FOUND )
+			printf("Found pattern %d at position %lu\n", ind, pat_found[ind] );
 			checksum_found = ( checksum_found + pat_found[ind] ) % CHECKSUM_MAX;
 	}
 	for( lind=0; lind < seq_length; lind++) {
 		if ( seq_matches[lind] != NOT_FOUND )
-			printf("(checksum_matches + seq_matchesRoot[lind] + 1*(size-1)), CHECKSUM_MAX = (%lu + %d), %d = %d\n", checksum_matches, seq_matches[lind], CHECKSUM_MAX, ( checksum_matches + seq_matches[lind]) % CHECKSUM_MAX);
 			checksum_matches = ( checksum_matches + seq_matches[lind] ) % CHECKSUM_MAX;
 	}
 
