@@ -475,9 +475,13 @@ int main(int argc, char *argv[]) {
 	for (int i=0; i<pat_number; i++){
 		sharedMemSize += pat_length[i] * sizeof(char);
 	}
-	//printa inizio e fine per ogni rank
-	printf("Rank %d inizio %d fine %d\n", rank, inizio, fine);
 	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
+
+	cudaError_t err = cudaGetLastError();
+	if (err != cudaSuccess) {
+		printf("CUDA Error after kernel launch: %s\n", cudaGetErrorString(err));
+	}
+	
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
