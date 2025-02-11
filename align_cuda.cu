@@ -515,6 +515,7 @@ int main(int argc, char *argv[]) {
 
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
+	unsigned long sesso = 0;
 	unsigned long checksum_found = 0;
 	if (rank==0){
 		for( ind=0; ind < pat_number; ind++) {
@@ -524,9 +525,10 @@ int main(int argc, char *argv[]) {
 		}
 		for( lind=0; lind < seq_length; lind++) {
 			if ( seq_matchesRoot[lind] != NOT_FOUND )
+				sesso = checksum_matches;
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
-				printf("checksum_matches: %lu\n", checksum_matches);
-				printf("checksum_matches: %lu\n", ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX);
+				printf("---\nchecksum_matches: %lu\n", checksum_matches);
+				printf("checksum_matches: %lu\n", ( sesso + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX);
 		}
 	}
 
