@@ -63,7 +63,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     if (threadIdx.x == 0){ 
 		for (unsigned long i =0; i<seq_length; i++){
 			shared_sequence_and_pattern[i] = d_sequence[i];
-			printf("%c, %c\n", shared_sequence_and_pattern[i], d_sequence[i]);
 		}
 	}
 	__syncthreads();
@@ -71,8 +70,9 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	// Copy patterns to shared memory
 	int offset = seq_length;
 	if (pat >= inizio && pat < fine){
-		int contatore = 0;
+		int contatore = blockIdx.x * blockDim.x + inizio;
 		while (contatore < pat){
+
 			offset += d_pat_lengths[contatore];
 			contatore++;
 		}
@@ -81,17 +81,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 		}
 	}
     else return;
-	//printa ogni pattern
-	/*
-	if (pat==0){
-		for (int i = 0; i<pat_number; i++){
-			printf("Pattern %d: ", i);
-			for (int j = 0; j<d_pat_lengths[i]; j++){
-				printf("%c", shared_sequence_and_pattern[offset + j]);
-			}
-			printf("\n");
-		}
-	}*/
 	
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
@@ -474,9 +463,7 @@ int main(int argc, char *argv[]) {
 
 	/* 5. Process patterns */
 	/* 5.1. Launch kernel */
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop, 0);
-	size_t maxSharedMem = prop.sharedMemPerBlock;
+
 	int parziale = pat_number / size;
 	int resto = pat_number % size;
 	int inizio = rank * parziale + resto;
@@ -484,19 +471,23 @@ int main(int argc, char *argv[]) {
 	if (rank==0){
 		inizio = 0;
 	}
-	int blockSize = 256;
-	size_t sharedMemSize = seq_length * sizeof(char);
+	//calcola il massimo di memoria shared richiedibile
+	cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, 0);
+    size_t maxSharedMem = prop.sharedMemPerBlock;
+	int blockSize = 1024;
+	unsigned long maxLength = 0;
 	for (int i=0; i<pat_number; i++){
-		sharedMemSize += pat_length[i] * sizeof(char);
-	}
-	if (sharedMemSize > maxSharedMem) {
-		blockSize = maxSharedMem / (sharedMemSize / blockSize);
-		// Mantiene il blockSize multiplo di 32
-		blockSize = (blockSize / 32) * 32;
-		if (blockSize == 0) {
-			fprintf(stderr,"\n-- Error: Insufficient shared memory. Reduce memory used for the block\n");
-			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		if (pat_length[i] > maxLength){
+			maxLength = pat_length[i];
 		}
+	}
+	size_t sharedMemSize = seq_length * sizeof(char);
+	sharedMemSize += maxLength * sizeof(char)*blockSize;
+	while(sharedMemSize > maxSharedMem){
+		blockSize -= 32;
+		sharedMemSize = seq_length * sizeof(char);
+		sharedMemSize += maxLength * sizeof(char) * blockSize;
 	}
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
 	
