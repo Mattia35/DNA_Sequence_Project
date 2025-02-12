@@ -2,7 +2,7 @@ universe = parallel
 
 executable = openmpiscript.sh
 
-arguments = align_cuda 1000 0.35 0.2 0.25 0 0 0 20000 10 0 500 0 M 4353435
+arguments = align_cuda 10000 0.35 0.2 0.25 0 0 0 10000 9000 9000 50 100 M 4353435
 should_transfer_files = YES
 
 transfer_input_files = align_cuda

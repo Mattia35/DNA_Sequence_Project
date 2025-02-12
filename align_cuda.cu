@@ -490,6 +490,7 @@ int main(int argc, char *argv[]) {
 		sharedMemSize += maxLength * sizeof(char) * blockSize;
 	}
 	printf("blockSize: %d\n", blockSize);
+	printf("sharedMemSize: %lu e maxSharedMem: %lu\n", sharedMemSize, maxSharedMem);
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
 	printf("sharedMemSize: %lu e maxSharedMem: %lu\n", sharedMemSize, maxSharedMem);
 	
