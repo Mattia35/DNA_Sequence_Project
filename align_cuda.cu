@@ -91,7 +91,38 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			d_pat_found[pat] = start;
 			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
 				atomicAdd(&d_seq_matches[start + ind],1);
-				//d_seq_matches[start + ind]++;
+			}
+			break;
+		}
+	}
+}
+
+
+
+
+__global__ void pattern_search_kernel2(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
+    extern __shared__ char shared_sequence[];
+    int threadId = threadIdx.x + blockIdx.x * blockDim.x;
+    int pat = threadId + inizio;
+	unsigned long lind;
+    // Copy sequence to shared memory
+    if (threadIdx.x == 0){ 
+		for (unsigned long i =0; i<seq_length; i++){
+			shared_sequence[i] = d_sequence[i];
+		}
+	}
+	__syncthreads();
+    if (pat < inizio || pat >= fine) return;
+	
+	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
+		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
+			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
+		}
+		if (lind == d_pat_lengths[pat]) {
+			atomicAdd(d_pat_matches,1);
+			d_pat_found[pat] = start;
+			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
+				atomicAdd(&d_seq_matches[start + ind],1);
 			}
 			break;
 		}
@@ -483,19 +514,22 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	size_t sharedMemSize = seq_length * sizeof(char);
-	sharedMemSize += maxLength * sizeof(char)*blockSize;
+	sharedMemSize += maxLength * sizeof(char) * blockSize;
 	while(sharedMemSize > maxSharedMem){
 		blockSize -= 32;
 		sharedMemSize = seq_length * sizeof(char);
 		sharedMemSize += maxLength * sizeof(char) * blockSize;
 	}
-	printf("blockSize: %d\n", blockSize);
-	printf("sharedMemSize: %lu e maxSharedMem: %lu\n", sharedMemSize, maxSharedMem);
+	bool controllo = true;
+	if (blockSize == 0){
+		controllo = false;
+		blockSize = 1024;
+		sharedMemSize = seq_length * sizeof(char);
+	}
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
-	printf("sharedMemSize: %lu e maxSharedMem: %lu\n", sharedMemSize, maxSharedMem);
 	
-	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
-
+	if (controllo) pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
+	else pattern_search_kernel2<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	/* 5.2. Copy results back */
