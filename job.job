@@ -2,7 +2,7 @@ universe = parallel
 
 executable = openmpiscript.sh
 
-arguments = align_cuda 10000 0.35 0.2 0.25 0 0 0 10000 9000 9000 50 100 M 4353435
+arguments = align_cuda 300 0.1 0.3 0.35 100 5 5 300 150 50 150 80 M 609823
 should_transfer_files = YES
 
 transfer_input_files = align_cuda
@@ -13,9 +13,9 @@ output = logs/out.$(NODE)
 error = logs/err.$(NODE)
 log = logs/log
 
-machine_count = 1
-request_cpus = 2
-request_gpus = 1
+machine_count = 2
+request_cpus = 8
+request_gpus = 4
 getenv = True
 
 queue

@@ -366,8 +366,8 @@ int main(int argc, char *argv[]) {
 		seq_matches[lind] = NOT_FOUND;
 	}
 	/* 5. Search for each pattern */ 
-	omp_set_num_threads(4);
-	#pragma omp parallel for private(lind) reduction(+:pat_matches) reduction(+:seq_matches[:seq_length]) schedule(dynamic)
+	omp_set_num_threads(1);
+	#pragma omp parallel for private(lind) reduction(+:pat_matches) reduction(+:seq_matches[:seq_length]) schedule(dynamic) 
 	for( int pat=0; pat < pat_number; pat++ ) {
 		/* 5.1. For each posible starting position */
 		for( unsigned long start=0; start <= seq_length - pat_length[pat]; start++) {
