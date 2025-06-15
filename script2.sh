@@ -3,13 +3,13 @@
 # File di output per i tempi
 TEMPI_FILE="tempi.txt"
 LOG_FILE="$HOME/Embedded/logs/out.0"
-
+total_time=0
 # Svuota il file tempi.txt all'inizio
 > "$TEMPI_FILE"
 
-# Esegui il job 150 volte
-for i in {1..150}; do
-    echo "Esecuzione $i di 150..."
+# Esegui il job 50 volte
+for i in {1..50}; do
+    echo "Esecuzione $i di 50..."
     
     # Sottometti il job
     condor_submit job.job > /dev/null 2>&1
@@ -25,13 +25,14 @@ for i in {1..150}; do
     # Estrai il tempo dall'output
     TEMPO=$(grep -oP 'Time: \K[0-9.]+' "$LOG_FILE")
 
-    # Salva il tempo nel file
-    echo "$TEMPO" >> "$TEMPI_FILE"
-
-    echo "Tempo registrato: $TEMPO"
-    
+    # Somma dei tempi
+    total_time=$(echo "$total_time + $TEMPO" | bc)
     # Pulizia del log per evitare di leggere vecchi valori
     > "$LOG_FILE"
 done
 
-echo "Tutti i tempi sono stati salvati in $TEMPI_FILE"
+# Calcolo della media 
+tempo_medio=$(echo "scale=6; $total_time / 50" | bc)
+
+# Stampa valori
+echo "Test completati! La media è: $tempo_medio"
