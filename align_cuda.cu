@@ -60,11 +60,9 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
     int pat = threadId + inizio;
 	unsigned long lind;
     // Copy sequence to shared memory
-    if (threadIdx.x == 0){ 
-		for (unsigned long i =0; i<seq_length; i++){
-			shared_sequence_and_pattern[i] = d_sequence[i];
-		}
-	}
+    for (unsigned long i = threadIdx.x; i < seq_length; i += blockDim.x) {
+        shared_sequence[i] = d_sequence[i];
+    }
 	__syncthreads();
 
 	// Copy patterns to shared memory
@@ -82,7 +80,7 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 	}
     else return;
 	
-	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
+	/*for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
 			if (shared_sequence_and_pattern[start + lind] != shared_sequence_and_pattern[offset + lind]) break;
 		}
@@ -94,7 +92,26 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
 			}
 			break;
 		}
-	}
+	}*/
+
+	const char* pattern = d_patterns[pat];
+    unsigned long pat_len = d_pat_lengths[pat];
+
+	for (unsigned long start = 0; start <= seq_length - pat_len; start++) {
+        unsigned long i = 0;
+        while (i < pat_len && shared_sequence[start + i] == pattern[i]) {
+            i++;
+        }
+        if (i == pat_len) {
+            atomicAdd(d_pat_matches, 1);
+            d_pat_found[pat] = start;
+            for (unsigned long k = 0; k < pat_len; ++k) {
+                atomicAdd(&d_seq_matches[start + k], 1);
+            }
+            found = true;
+            break;  // fermati alla prima occorrenza
+        }
+    }
 }
 
 
@@ -106,14 +123,17 @@ __global__ void pattern_search_kernel2(const char* d_sequence, int* d_pat_matche
     int pat = threadId + inizio;
 	unsigned long lind;
     // Copy sequence to shared memory
-    if (threadIdx.x == 0){ 
-		for (unsigned long i =0; i<seq_length; i++){
-			shared_sequence[i] = d_sequence[i];
-		}
-	}
+    for (unsigned long i = threadIdx.x; i < seq_length; i += blockDim.x) {
+        shared_sequence[i] = d_sequence[i];
+    }
 	__syncthreads();
     if (pat < inizio || pat >= fine) return;
+
+	const char* pattern = d_patterns[pat];
+    unsigned long pat_len = d_pat_lengths[pat];
+
 	
+	/*
 	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
 		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
 			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
@@ -127,6 +147,23 @@ __global__ void pattern_search_kernel2(const char* d_sequence, int* d_pat_matche
 			break;
 		}
 	}
+	*/
+
+	for (unsigned long start = 0; start <= seq_length - pat_len; start++) {
+        unsigned long i = 0;
+        while (i < pat_len && shared_sequence[start + i] == pattern[i]) {
+            i++;
+        }
+        if (i == pat_len) {
+            atomicAdd(d_pat_matches, 1);
+            d_pat_found[pat] = start;
+            for (unsigned long k = 0; k < pat_len; ++k) {
+                atomicAdd(&d_seq_matches[start + k], 1);
+            }
+            found = true;
+            break;  // fermati alla prima occorrenza
+        }
+    }
 }
 
 /*
@@ -506,7 +543,7 @@ int main(int argc, char *argv[]) {
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop, 0);
 	size_t maxSharedMem = prop.sharedMemPerBlock;
-	int blockSize = 512;
+	int blockSize = 1024;
 	unsigned long maxLength = 0;
 	for (int i=0; i<pat_number; i++){
 		if (pat_length[i] > maxLength){
@@ -523,9 +560,11 @@ int main(int argc, char *argv[]) {
 	bool controllo = true;
 	if (blockSize == 0){
 		controllo = false;
-		blockSize = 512;
+		blockSize = 1024;
 		sharedMemSize = seq_length * sizeof(char);
 	}
+	blockSize = 256;
+	controllo = false;
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
 	
 	if (controllo) pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
