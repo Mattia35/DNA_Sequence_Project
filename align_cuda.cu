@@ -651,23 +651,19 @@ int main(int argc, char *argv[]) {
 			free( pat_found_res );
 			free( pat_foundRoot );
 			free( seq_matchesRoot );
+			printf("End of execution number %d\n", esecuzione);
 		}
 		/* 11. End */
 		MPI_Finalize();
-		if (rank==0){
-			printf("End of execution number %d\n", esecuzione);
-		}
 	}
 	// calcola la media dei tempi di esecuzione e salvala su tempi.txt
-	if (rank==0){
-		FILE *file = fopen("tempi.txt", "a");
-		if (file == NULL) {
-			fprintf(stderr, "Error opening file for writing\n");
-			return 1;
-		}
-		fprintf(file, "%lf\n", final_time / 50);
-		fclose(file);
-		printf("Average time: %lf\n", final_time / 50);
+	FILE *file = fopen("tempi.txt", "a");
+	if (file == NULL) {
+		fprintf(stderr, "Error opening file for writing\n");
+		return 1;
 	}
+	fprintf(file, "%lf\n", final_time / 50);
+	fclose(file);
+	printf("Average time: %lf\n", final_time / 50);
 	return 0;
 }
