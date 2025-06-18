@@ -647,7 +647,7 @@ int main(int argc, char *argv[]) {
 		free( pattern );
 		free( pat_length );
 		free( pat_found );
-		if (rank==0 or rank==size-1){
+		if (rank==0){
 			free( pat_found_res );
 			free( pat_foundRoot );
 			free( seq_matchesRoot );
