@@ -533,7 +533,9 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
 	// tempo di esecuzione del kernel
-	double kernel_time = cp_Wtime() - ttotal;
+	if (rank==0){
+		double kernel_time = cp_Wtime() - ttotal;
+	}
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
