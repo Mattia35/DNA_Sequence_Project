@@ -630,7 +630,6 @@ int main(int argc, char *argv[]) {
 		printf("\n");
 		/* 9.3. Total computation time */
 		printf("Time: %lf\n", ttotal );
-		final_time += ttotal;
 
 		/* 9.4. Results: Statistics */
 		printf("Result: %d, %lu, %lu\n\n", 
