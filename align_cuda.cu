@@ -535,6 +535,7 @@ int main(int argc, char *argv[]) {
 	// tempo di esecuzione del kernel
 	if (rank==0){
 		double kernel_time = cp_Wtime() - ttotal;
+		printf("Kernel execution time: %lf seconds\n", kernel_time);
 	}
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
