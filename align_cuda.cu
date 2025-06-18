@@ -527,6 +527,11 @@ int main(int argc, char *argv[]) {
 		sharedMemSize = seq_length * sizeof(char);
 	}
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
+
+	if (rank==0){
+		double kernel_time = cp_Wtime() - ttotal;
+		printf("Before Kernel: %lf seconds\n", kernel_time);
+	}
 	
 	if (controllo) pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	else pattern_search_kernel2<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
