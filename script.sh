@@ -11,7 +11,7 @@ total_time=0  # Variabile per la somma dei tempi
 for i in $(seq 1 $N_RUNS); do
     echo "eseguo numero $i"
     # Esegui il programma e prendi solo la riga con "Time:"
-    tempo=$(./align_omp 6000 0.35 0.2 0.25 33500 10 0 33500 10 0 500 0 M 4353435 | grep "Time:" | awk '{print $2}')
+    tempo=$(srun --partition=students --gpus=1 --cpus-per-task=1 --nodes=1 mpirun -np 4 --oversubscribe main_mpi_cuda.out 3000 0.35 0.2 0.25 40000 10 0 40000 10 0 500 0 M 4353435 | grep "Time:" | awk '{print $2}')
     total_time=$(echo "$total_time + $tempo" | bc)  # Somma i tempi
   
 done
