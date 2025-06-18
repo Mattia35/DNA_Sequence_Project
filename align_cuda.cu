@@ -502,6 +502,10 @@ int main(int argc, char *argv[]) {
 	if (rank==0){
 		inizio = 0;
 	}
+	if (rank==0){
+		double kernel_time = cp_Wtime() - ttotal;
+		printf("Before Kernel: %lf seconds\n", kernel_time);
+	}
 	//calcola il massimo di memoria shared richiedibile
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop, 0);
