@@ -502,15 +502,11 @@ int main(int argc, char *argv[]) {
 	if (rank==0){
 		inizio = 0;
 	}
-	if (rank==0){
-		double kernel_time = cp_Wtime() - ttotal;
-		printf("Before Kernel: %lf seconds\n", kernel_time);
-	}
 	//calcola il massimo di memoria shared richiedibile
 	cudaDeviceProp prop;
 	cudaGetDeviceProperties(&prop, 0);
 	size_t maxSharedMem = prop.sharedMemPerBlock;
-	int blockSize = 1024;
+	int blockSize = 512;
 	unsigned long maxLength = 0;
 	for (int i=0; i<pat_number; i++){
 		if (pat_length[i] > maxLength){
@@ -527,25 +523,15 @@ int main(int argc, char *argv[]) {
 	bool controllo = true;
 	if (blockSize == 0){
 		controllo = false;
-		blockSize = 1024;
+		blockSize = 512;
 		sharedMemSize = seq_length * sizeof(char);
 	}
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
-
-	if (rank==0){
-		double kernel_time = cp_Wtime() - ttotal;
-		printf("Before Kernel: %lf seconds\n", kernel_time);
-	}
 	
 	if (controllo) pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	else pattern_search_kernel2<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
-	// tempo di esecuzione del kernel
-	if (rank==0){
-		double kernel_time = cp_Wtime() - ttotal;
-		printf("Kernel execution time: %lf seconds\n", kernel_time);
-	}
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
