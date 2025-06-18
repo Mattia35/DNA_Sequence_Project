@@ -238,6 +238,7 @@ int main(int argc, char *argv[]) {
 	MPI_Init( &argc, &argv );
 	int rank;
 	MPI_Comm_rank( MPI_COMM_WORLD, &rank );
+	printf("Rank %d of %d\n", rank, MPI_COMM_WORLD);
 	
 	/* 1. Read scenary arguments */
 	/* 1.1. Check minimum number of arguments */
