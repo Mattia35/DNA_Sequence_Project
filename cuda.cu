@@ -54,79 +54,41 @@ double cp_Wtime(){
  *
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
+
 __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
-    extern __shared__ char shared_sequence_and_pattern[];
-    int threadId = threadIdx.x + blockIdx.x * blockDim.x;
-    int pat = threadId + inizio;
-	unsigned long lind;
-    // Copy sequence to shared memory
-    if (threadIdx.x == 0){ 
-		for (unsigned long i =0; i<seq_length; i++){
-			shared_sequence_and_pattern[i] = d_sequence[i];
-		}
-	}
-	__syncthreads();
-
-	// Copy patterns to shared memory
-	int offset = seq_length;
-	if (pat >= inizio && pat < fine){
-		int contatore = blockIdx.x * blockDim.x + inizio;
-		while (contatore < pat){
-
-			offset += d_pat_lengths[contatore];
-			contatore++;
-		}
-		for (unsigned long i = 0; i < d_pat_lengths[pat]; i++){
-			shared_sequence_and_pattern[i + offset] = d_patterns[pat][i];
-		}
-	}
-    else return;
-	
-	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
-		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (shared_sequence_and_pattern[start + lind] != shared_sequence_and_pattern[offset + lind]) break;
-		}
-		if (lind == d_pat_lengths[pat]) {
-			atomicAdd(d_pat_matches,1);
-			d_pat_found[pat] = start;
-			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
-				atomicAdd(&d_seq_matches[start + ind],1);
-			}
-			break;
-		}
-	}
-}
-
-
-
-
-__global__ void pattern_search_kernel2(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
     extern __shared__ char shared_sequence[];
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
     int pat = threadId + inizio;
 	unsigned long lind;
     // Copy sequence to shared memory
-    if (threadIdx.x == 0){ 
-		for (unsigned long i =0; i<seq_length; i++){
-			shared_sequence[i] = d_sequence[i];
-		}
-	}
+    for (unsigned long i = threadIdx.x; i < seq_length; i += blockDim.x) {
+        shared_sequence[i] = d_sequence[i];
+    }
 	__syncthreads();
     if (pat < inizio || pat >= fine) return;
-	
-	for ( unsigned long start = 0; start <= seq_length - d_pat_lengths[pat]; start++) {
-		for (lind = 0; lind < d_pat_lengths[pat]; lind++) {
-			if (shared_sequence[start + lind] != d_patterns[pat][lind]) break;
-		}
-		if (lind == d_pat_lengths[pat]) {
-			atomicAdd(d_pat_matches,1);
-			d_pat_found[pat] = start;
-			for (int ind = 0; ind < d_pat_lengths[pat]; ind++) {
-				atomicAdd(&d_seq_matches[start + ind],1);
-			}
-			break;
-		}
-	}
+
+	const char* pattern = d_patterns[pat];
+    unsigned long pat_len = d_pat_lengths[pat];
+
+    int local_matches = 0; // Variable to count local matches
+
+	for (unsigned long start = 0; start <= seq_length - pat_len; start++) {
+        unsigned long i = 0;
+        while (i < pat_len && shared_sequence[start + i] == pattern[i]) {
+            i++;
+        }
+        if (i == pat_len) {
+            //atomicAdd(d_pat_matches, 1);
+            local_matches++;
+            d_pat_found[pat] = start;
+            for (unsigned long k = 0; k < pat_len; ++k) {
+                atomicAdd(&d_seq_matches[start + k], 1);
+            }
+            break;
+        }
+    }
+    // Update the global pattern matches count
+    atomicAdd(d_pat_matches, local_matches);
 }
 
 /*
@@ -502,36 +464,15 @@ int main(int argc, char *argv[]) {
 	if (rank==0){
 		inizio = 0;
 	}
-	//calcola il massimo di memoria shared richiedibile
-	cudaDeviceProp prop;
-	cudaGetDeviceProperties(&prop, 0);
-	size_t maxSharedMem = prop.sharedMemPerBlock;
-	int blockSize = 512;
-	unsigned long maxLength = 0;
-	for (int i=0; i<pat_number; i++){
-		if (pat_length[i] > maxLength){
-			maxLength = pat_length[i];
-		}
-	}
 	size_t sharedMemSize = seq_length * sizeof(char);
-	sharedMemSize += maxLength * sizeof(char) * blockSize;
-	while(sharedMemSize > maxSharedMem){
-		blockSize -= 32;
-		sharedMemSize = seq_length * sizeof(char);
-		sharedMemSize += maxLength * sizeof(char) * blockSize;
-	}
-	bool controllo = true;
-	if (blockSize == 0){
-		controllo = false;
-		blockSize = 512;
-		sharedMemSize = seq_length * sizeof(char);
-	}
+	int blockSize = 256;
 	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
-	
-	if (controllo) pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
-	else pattern_search_kernel2<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
+	// print time
+    printf("Time passed before kernel launch: %lf\n", cp_Wtime() - ttotal);
+	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	MPI_Barrier( MPI_COMM_WORLD );
+    printf("Time passed after kernel launch: %lf\n", cp_Wtime() - ttotal);
 	/* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
@@ -575,8 +516,10 @@ int main(int argc, char *argv[]) {
 			pat_found_res[i+ resto]=pat_foundRoot[i];
 		}
 	}
+    printf("Time passed after gather: %lf\n", cp_Wtime() - ttotal);
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    printf("Time passed after reduces: %lf\n", cp_Wtime() - ttotal);
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
 	unsigned long checksum_found = 0;
