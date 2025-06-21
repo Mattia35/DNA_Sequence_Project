@@ -17,6 +17,7 @@
 #include<limits.h>
 #include<sys/time.h>
 #include<mpi.h>
+#include<omp.h>
 
 
 /* Arbitrary value to indicate that no matches are found */
@@ -391,13 +392,14 @@ int main(int argc, char *argv[]) {
 			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 		}
 	}
-
-	for( pat=inizio; pat < fine; pat++ ) {
+	omp_set_num_threads(1);
+	#pragma omp parallel for reduction(+:pat_matches) reduction(+:seq_matches[:seq_length]) schedule(guided)
+	for( int pat=inizio; pat < fine; pat++ ) {
 		unsigned long lunghezza_path = pat_length[pat];
 		char *current_pattern = pattern[pat];
 		unsigned long max_length = seq_length - lunghezza_path;
 		/* 5.1. For each posible starting position */
-		for( start=0; start <= max_length; start++) {
+		for( unsigned long start=0; start <= max_length; start++) {
 			unsigned long lind = 0;
 			/* 5.1.1. For each pattern element */
 			while( lind<lunghezza_path && sequence[start + lind] == current_pattern[lind]) {lind++;}
