@@ -17,6 +17,7 @@
 #include<limits.h>
 #include<sys/time.h>
 #include<mpi.h>
+#include<omp.h>
 
 
 /* Arbitrary value to indicate that no matches are found */
@@ -365,64 +366,16 @@ int main(int argc, char *argv[]) {
 	int pat;
 	
 	//modifiche mie
-	int massima_lunghezza_pat = (pat_number / size) + (pat_number % size);
-
-	int inizio_pat = rank * massima_lunghezza_pat;
-
-	//fine modifiche
-if (rank==0){
-		for( pat= 0; pat < massima_lunghezza_pat; pat++ ) {
-			/* 5.1. For each posible starting position */
-			for( start=0; start <= seq_length - pat_length[pat]; start++) {
-
-				/* 5.1.1. For each pattern element */
-				for( lind=0; lind<pat_length[pat]; lind++) {
-					/* Stop this test when different nucleotids are found */
-					if ( sequence[start + lind] != pattern[pat][lind] ) break;
-				}
-				/* 5.1.2. Check if the loop ended with a match */
-				if ( lind == pat_length[pat] ) {
-					pat_matches++;
-					pat_found[pat] = start;
-					for( unsigned long ind=0; ind<pat_length[pat]; ind++) {
-						seq_matches[ pat_found[pat] + ind ] ++;
-					}
-					break;
-				}
-			}
-		}
-	}
-
-	else{
-		for( pat=inizio_pat; pat < inizio_pat+(pat_number / size); pat++ ) {
-			/* 5.1. For each posible starting position */
-			for( start=0; start <= seq_length - pat_length[pat]; start++) {
-
-				/* 5.1.1. For each pattern element */
-				for( lind=0; lind<pat_length[pat]; lind++) {
-					/* Stop this test when different nucleotids are found */
-					if ( sequence[start + lind] != pattern[pat][lind] ) break;
-				}
-				/* 5.1.2. Check if the loop ended with a match */
-				if ( lind == pat_length[pat] ) {
-					pat_matches++;
-					pat_found[pat] = start;
-					for( unsigned long ind=0; ind<pat_length[pat]; ind++) {
-						seq_matches[ pat_found[pat] + ind ] ++;
-					}
-					break;
-				}
-			}
-		}
-	}
-
-	//modifiche mie
-
+	int parziale = pat_number / size;
+	int resto = pat_number % size;
+	int inizio = rank * parziale + resto;
+	int fine = (rank+1) * parziale + resto;
 	int pat_matches_root = 0;
 	unsigned long *pat_foundRoot;
 	int *seq_matchesRoot;
 	unsigned long *pat_found_res;
-	if(rank==0){
+	if (rank==0){
+		inizio = 0;
 		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-(pat_number % size)) );
 		if ( pat_foundRoot == NULL ) {
 			fprintf(stderr,"\n-- Error allocating aux pattern structure for size: %d\n", pat_number );
@@ -439,23 +392,46 @@ if (rank==0){
 			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 		}
 	}
-
-	MPI_Gather(&pat_found[inizio_pat], pat_number / size, MPI_UNSIGNED_LONG, pat_foundRoot, pat_number / size, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-	if (rank==0){
-		for (int i=0; i<pat_number / size; i++){
-			pat_found_res[i]=pat_foundRoot[i];
-		}
-		for (int i=pat_number / size; i<massima_lunghezza_pat; i++){
-			pat_found_res[i]=pat_found[i];
-		}
-		for (int i=pat_number / size; i<(pat_number-(pat_number % size)); i++){
-			pat_found_res[i+(pat_number % size)]=pat_foundRoot[i];
+	omp_set_num_threads(2);
+	#pragma omp parallel for reduction(+:pat_matches) reduction(+:seq_matches[:seq_length]) schedule(guided)
+	for( pat=inizio; pat < fine; pat++ ) {
+		unsigned long lunghezza_path = pat_length[pat];
+		char *current_pattern = pattern[pat];
+		unsigned long max_length = seq_length - lunghezza_path;
+		/* 5.1. For each posible starting position */
+		for( start=0; start <= max_length; start++) {
+			unsigned long lind = 0;
+			/* 5.1.1. For each pattern element */
+			while( lind<lunghezza_path && sequence[start + lind] == current_pattern[lind]) {lind++;}
+			/* 5.1.2. Check if the loop ended with a match */
+			if ( lind == lunghezza_path ) {
+				pat_matches++;
+				pat_found[pat] = start;
+				for( unsigned long ind=0; ind<lunghezza_path; ind++) {
+					seq_matches[ start + ind ] ++;
+				}
+				break;
+			}
 		}
 	}
-	
+
+	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+	if (rank==0){
+		for (int i = 0; i < pat_number; i++) {
+			if (i < parziale) {
+				pat_found_res[i] = pat_foundRoot[i];
+			} else if (i < parziale + resto) {
+				pat_found_res[i] = pat_found[i];
+			} else {
+				pat_found_res[i] = pat_foundRoot[i - resto];
+			}
+		}
+	}
+
 	
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
 
 	//fine modifiche
 	
@@ -465,17 +441,14 @@ if (rank==0){
 	unsigned long checksum_found = 0;
 	if (rank==0){
 		for( ind=0; ind < pat_number; ind++) {
-			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND )
+			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND ){
+				//printf("Found pattern %d at position %lu\n", ind, pat_found_res[ind] );
 				checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
+			}
+			
 		}
-		/*ALTERNATIVA, MODIFICANDO SEQ_MATCHESROOT
-
 		for( lind=0; lind < seq_length; lind++) {
-			seq_matchesRoot[lind] += 1*(size-1);
-		}
-		*/
-		for( lind=0; lind < seq_length; lind++) {
-			if ( seq_matchesRoot[lind] != NOT_FOUND )
+			if ( seq_matchesRoot[lind] + 1*(size-1) != NOT_FOUND )
 				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
 		}
 	}

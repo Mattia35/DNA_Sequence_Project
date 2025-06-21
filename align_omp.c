@@ -369,18 +369,19 @@ int main(int argc, char *argv[]) {
         omp_set_num_threads(32);
 	#pragma omp parallel for private(lind) reduction(+:pat_matches) reduction(+:seq_matches[:seq_length]) schedule(guided) 
 	for( int pat=0; pat < pat_number; pat++ ) {
+		unsigned long lunghezza_path = pat_length[pat];
 		/* 5.1. For each posible starting position */
-		for( unsigned long start=0; start <= seq_length - pat_length[pat]; start++) {
+		for( unsigned long start=0; start <= seq_length - lunghezza_path; start++) {
 			/* 5.1.1. For each pattern element */
-			for( lind=0; lind<pat_length[pat]; lind++) {
+			for( lind=0; lind<lunghezza_path; lind++) {
 				/* Stop this test when different nucleotids are found */
 				if ( sequence[start + lind] != pattern[pat][lind] ) break;
 			}
 			/* 5.1.2. Check if the loop ended with a match */
-			if ( lind == pat_length[pat] ) {
+			if ( lind == lunghezza_path ) {
 				pat_matches++;
 				pat_found[pat] = start;
-				for( unsigned long ind=0; ind<pat_length[pat]; ind++) {	
+				for( unsigned long ind=0; ind<lunghezza_path; ind++) {	
 					seq_matches[ pat_found[pat] + ind ] ++;
 				}
 				break;
