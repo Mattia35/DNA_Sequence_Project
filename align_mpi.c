@@ -365,7 +365,7 @@ int main(int argc, char *argv[]) {
 	unsigned long start;
 	int pat;
 	
-	//modifiche mie
+	// Distribute the patterns among the processes
 	int parziale = pat_number / size;
 	int resto = pat_number % size;
 	int inizio = rank * parziale + resto;
@@ -374,6 +374,8 @@ int main(int argc, char *argv[]) {
 	unsigned long *pat_foundRoot;
 	int *seq_matchesRoot;
 	unsigned long *pat_found_res;
+
+	// If the rank is 0, initialize the root structures and allocate the root structures for the results
 	if (rank==0){
 		inizio = 0;
 		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-(pat_number % size)) );
@@ -392,6 +394,8 @@ int main(int argc, char *argv[]) {
 			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
 		}
 	}
+
+	// used omp parallelism
 	omp_set_num_threads(1);
 	#pragma omp parallel for reduction(+:pat_matches) reduction(+:seq_matches[:seq_length]) schedule(guided)
 	for( int pat=inizio; pat < fine; pat++ ) {
@@ -415,6 +419,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	// MPI Gather and Reduce, to collect results in the root process
 	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 	if (rank==0){
 		for (int i = 0; i < pat_number; i++) {
@@ -427,14 +432,10 @@ int main(int argc, char *argv[]) {
 			}
 		}
 	}
-
 	
 	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
-
-	//fine modifiche
-	
 	/* 7. Check sums */
 
 	unsigned long checksum_matches = 0;
@@ -442,7 +443,6 @@ int main(int argc, char *argv[]) {
 	if (rank==0){
 		for( ind=0; ind < pat_number; ind++) {
 			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND ){
-				//printf("Found pattern %d at position %lu\n", ind, pat_found_res[ind] );
 				checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
 			}
 			
