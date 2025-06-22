@@ -430,7 +430,13 @@ int main(int argc, char *argv[]) {
 	/* 9. Output for leaderboard */
 	printf("\n");
 	/* 9.1. Total computation time */
-	printf("Time: %lf\n", ttotal );
+	FILE *f = fopen("tempi.txt", "a");
+	if (f == NULL) {
+		fprintf(stderr, "Errore nell'apertura di tempi.txt\n");
+		exit(EXIT_FAILURE);
+	}
+	fprintf(f, "%lf\n", ttotal);
+	fclose(f);
 
 	/* 9.2. Results: Statistics */
 	printf("Result: %d, %lu, %lu\n\n", 
