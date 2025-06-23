@@ -16,7 +16,6 @@
 #include<string.h>
 #include<limits.h>
 #include<sys/time.h>
-#include<mpi.h>
 
 /* Headers for the CUDA assignment versions */
 #include<cuda.h>
@@ -55,31 +54,25 @@ double cp_Wtime(){
  */
 /* ADD KERNELS AND OTHER FUNCTIONS HERE */
 
-__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number, int inizio, int fine) {
-    extern __shared__ char shared_sequence[];
+__global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches, unsigned long* d_pat_found, int* d_seq_matches, unsigned long* d_pat_lengths, const char ** d_patterns, unsigned long seq_length, int pat_number) {
     int threadId = threadIdx.x + blockIdx.x * blockDim.x;
-    int pat = threadId + inizio;
+    int pat = threadId;
 	unsigned long lind;
-    // Copy sequence to shared memory
-    for (unsigned long i = threadIdx.x; i < seq_length; i += blockDim.x) {
-        shared_sequence[i] = d_sequence[i];
-    }
-	__syncthreads();
-    if (pat < inizio || pat >= fine) return;
+
+    // Check if the thread is within the range of patterns
+    if (pat >= pat_number) return;
+
 
 	const char* pattern = d_patterns[pat];
     unsigned long pat_len = d_pat_lengths[pat];
 
-    int local_matches = 0; // Variable to count local matches
-
 	for (unsigned long start = 0; start <= seq_length - pat_len; start++) {
         unsigned long i = 0;
-        while (i < pat_len && shared_sequence[start + i] == pattern[i]) {
+        while (i < pat_len && d_sequence[start + i] == pattern[i]) {
             i++;
         }
         if (i == pat_len) {
-            //atomicAdd(d_pat_matches, 1);
-            local_matches++;
+            atomicAdd(d_pat_matches,1);
             d_pat_found[pat] = start;
             for (unsigned long k = 0; k < pat_len; ++k) {
                 atomicAdd(&d_seq_matches[start + k], 1);
@@ -87,8 +80,6 @@ __global__ void pattern_search_kernel(const char* d_sequence, int* d_pat_matches
             break;
         }
     }
-    // Update the global pattern matches count
-    atomicAdd(d_pat_matches, local_matches);
 }
 
 /*
@@ -195,18 +186,13 @@ int main(int argc, char *argv[]) {
 	/* 0. Default output and error without buffering, forces to write immediately */
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
-
-	/*Init MPI before processing arguments */
-	MPI_Init( &argc, &argv );
-	int rank;
-	MPI_Comm_rank( MPI_COMM_WORLD, &rank );
 	
 	/* 1. Read scenary arguments */
 	/* 1.1. Check minimum number of arguments */
 	if (argc < 15) {
 		fprintf(stderr, "\n-- Error: Not enough arguments when reading configuration from the command line\n\n");
 		show_usage( argv[0] );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 
 	/* 1.2. Read argument values */
@@ -217,7 +203,7 @@ int main(int argc, char *argv[]) {
 	if ( prob_G + prob_C + prob_A > 1 ) {
 		fprintf(stderr, "\n-- Error: The sum of G,C,A,T nucleotid probabilities cannot be higher than 1\n\n");
 		show_usage( argv[0] );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 	prob_C += prob_G;
 	prob_A += prob_C;
@@ -236,7 +222,7 @@ int main(int argc, char *argv[]) {
 	if ( pat_samp_mix != 'B' && pat_samp_mix != 'A' && pat_samp_mix != 'M' ) {
 		fprintf(stderr, "\n-- Error: Incorrect first character of pat_samp_mix: %c\n\n", pat_samp_mix);
 		show_usage( argv[0] );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 
 	unsigned long seed = atol( argv[14] );
@@ -250,9 +236,7 @@ int main(int argc, char *argv[]) {
 	printf("Arguments: Type of mix: %c, Random seed: %lu\n", pat_samp_mix, seed );
 	printf("\n");
 #endif // DEBUG
-	int device_count;
-	CUDA_CHECK_FUNCTION(cudaGetDeviceCount(&device_count));
-	CUDA_CHECK_FUNCTION(cudaSetDevice(rank%device_count)); 
+	CUDA_CHECK_FUNCTION(cudaSetDevice(0);); 
 
 	/* 2. Initialize data structures */
 	/* 2.1. Skip allocate and fill sequence */
@@ -266,7 +250,7 @@ int main(int argc, char *argv[]) {
 	char **pattern = (char **)malloc( sizeof(char*) * pat_number );
 	if ( pattern == NULL || pat_length == NULL ) {
 		fprintf(stderr,"\n-- Error allocating the basic patterns structures for size: %d\n", pat_number );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 
 	/* 2.2.2 Allocate and initialize ancillary structure for pattern types */
@@ -278,7 +262,7 @@ int main(int argc, char *argv[]) {
 	char *pat_type = (char *)malloc( sizeof(char) * pat_number );
 	if ( pat_type == NULL ) {
 		fprintf(stderr,"\n-- Error allocating ancillary structure for pattern of size: %d\n", pat_number );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 	for( ind=0; ind<pat_number; ind++ ) pat_type[ind] = PAT_TYPE_NONE;
 
@@ -377,11 +361,10 @@ int main(int argc, char *argv[]) {
 	pat_found = (unsigned long *)malloc( sizeof(unsigned long) * pat_number );
 	if ( pat_found == NULL ) {
 		fprintf(stderr,"\n-- Error allocating aux pattern structure for size: %d\n", pat_number );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 	
 	/* 3. Start global timer */
-	MPI_Barrier( MPI_COMM_WORLD );
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	double ttotal = cp_Wtime();
 
@@ -395,13 +378,12 @@ int main(int argc, char *argv[]) {
 	char *sequence = (char *)malloc( sizeof(char) * seq_length );
 	if ( sequence == NULL ) {
 		fprintf(stderr,"\n-- Error allocating the sequence for size: %lu\n", seq_length );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 
 	random = rng_new( seed );
 	generate_rng_sequence( &random, prob_G, prob_C, prob_A, sequence, seq_length);
 	int size;
-	MPI_Comm_size( MPI_COMM_WORLD, &size );
 #ifdef DEBUG
 	/* DEBUG: Print sequence and patterns */
 	printf("-----------------\n");
@@ -424,7 +406,7 @@ int main(int argc, char *argv[]) {
 	seq_matches = (int *)malloc( sizeof(int) * seq_length );
 	if ( seq_matches == NULL ) {
 		fprintf(stderr,"\n-- Error allocating aux sequence structures for size: %lu\n", seq_length );
-		MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
+		exit( EXIT_FAILURE );
 	}
 
 	/* 4. Initialize ancillary structures */
@@ -452,28 +434,12 @@ int main(int argc, char *argv[]) {
 	CUDA_CHECK_FUNCTION( cudaMalloc( &d_pat_found, sizeof(unsigned long) * pat_number ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( d_pat_found, pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyHostToDevice ) );
 
-
-
-	/* 5. Process patterns */
-	/* 5.1. Launch kernel */
-
-	int parziale = pat_number / size;
-	int resto = pat_number % size;
-	int inizio = rank * parziale + resto;
-	int fine = (rank+1) * parziale + resto;
-	if (rank==0){
-		inizio = 0;
-	}
-	size_t sharedMemSize = seq_length * sizeof(char);
+	//size_t sharedMemSize = seq_length * sizeof(char);
 	int blockSize = 256;
-	int numBlocks = (fine - inizio + blockSize - 1) / blockSize;
-	// print time
-    printf("Time passed before kernel launch: %lf\n", cp_Wtime() - ttotal);
-	pattern_search_kernel<<<numBlocks, blockSize, sharedMemSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number, inizio, fine);
-	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
-	MPI_Barrier( MPI_COMM_WORLD );
-    printf("Time passed after kernel launch: %lf\n", cp_Wtime() - ttotal);
-	/* 5.2. Copy results back */
+	int numBlocks = (pat_number + blockSize - 1) / blockSize;
+	pattern_search_kernel<<<numBlocks, blockSize>>>(d_sequence, d_pat_matches, d_pat_found, d_seq_matches, d_pat_length, d_pattern, seq_length, pat_number);
+	CUDA_CHECK_FUNCTION(cudaDeviceSynchronize());
+    /* 5.2. Copy results back */
 	CUDA_CHECK_FUNCTION( cudaMemcpy( pat_found, d_pat_found, sizeof(unsigned long) * pat_number, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( seq_matches, d_seq_matches, sizeof(int) * seq_length, cudaMemcpyDeviceToHost ) );
 	CUDA_CHECK_FUNCTION( cudaMemcpy( &pat_matches, d_pat_matches, sizeof(int), cudaMemcpyDeviceToHost ) );
@@ -483,59 +449,21 @@ int main(int argc, char *argv[]) {
 	cudaFree( d_seq_matches );
 	cudaFree( d_pat_matches );
 	cudaFree( d_pat_found );
-	int pat_matches_root = 0;
-	unsigned long *pat_foundRoot;
-	int *seq_matchesRoot;
-	unsigned long *pat_found_res;
-	if(rank==0){
-		pat_foundRoot = (unsigned long *)malloc( sizeof(unsigned long) * (pat_number-resto) );
-		if ( pat_foundRoot == NULL ) {
-			fprintf(stderr,"\n-- Error allocating aux pattern structure for size: %d\n", pat_number-resto );
-			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
-		}
-		pat_found_res = (unsigned long *)malloc( sizeof(unsigned long) * pat_number );
-		if ( pat_found_res == NULL ) {
-			fprintf(stderr,"\n-- Error allocating aux pattern structure for size: %d\n", pat_number );
-			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
-		}
-		seq_matchesRoot = (int *)malloc( sizeof(int) * seq_length );
-		if ( seq_matchesRoot == NULL ) {
-			fprintf(stderr,"\n-- Error allocating aux sequence structures for size: %lu\n", seq_length );
-			MPI_Abort( MPI_COMM_WORLD, EXIT_FAILURE );
-		}
-	}
-	MPI_Gather(&pat_found[inizio], parziale, MPI_UNSIGNED_LONG, pat_foundRoot, parziale, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-	if (rank==0){
-		for (int i=0; i<parziale; i++){
-			pat_found_res[i]=pat_foundRoot[i];
-		}
-		for (int i=parziale; i<parziale + resto; i++){
-			pat_found_res[i]=pat_found[i];
-		}
-		for (int i=parziale; i< pat_number - resto; i++){
-			pat_found_res[i+ resto]=pat_foundRoot[i];
-		}
-	}
-    printf("Time passed after gather: %lf\n", cp_Wtime() - ttotal);
-	MPI_Reduce(&pat_matches, &pat_matches_root, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(seq_matches, seq_matchesRoot, seq_length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-    printf("Time passed after reduces: %lf\n", cp_Wtime() - ttotal);
+
 	/* 7. Check sums */
 	unsigned long checksum_matches = 0;
 	unsigned long checksum_found = 0;
-	if (rank==0){
-		for( ind=0; ind < pat_number; ind++) {
-			if ( pat_found_res[ind] != (unsigned long)NOT_FOUND ){
-				//printf("Found pattern %d at position %lu\n", ind, pat_found_res[ind] );
-				checksum_found = ( checksum_found + pat_found_res[ind] ) % CHECKSUM_MAX;
-			}
-			
+    for( ind=0; ind < pat_number; ind++) {
+        if ( pat_found[ind] != (unsigned long)NOT_FOUND ){
+			checksum_found = ( checksum_found + pat_found[ind] ) % CHECKSUM_MAX;
 		}
-		for( lind=0; lind < seq_length; lind++) {
-			if ( seq_matchesRoot[lind] + 1*(size-1) != NOT_FOUND )
-				checksum_matches = ( checksum_matches + seq_matchesRoot[lind] + 1*(size-1) ) % CHECKSUM_MAX;
-		}
-	}
+        
+    }
+    for( lind=0; lind < seq_length; lind++) {
+        if ( seq_matches[lind] != NOT_FOUND ) {
+			checksum_matches = ( checksum_matches + seq_matches[lind] ) % CHECKSUM_MAX;
+        }
+    }
 
 #ifdef DEBUG
 	/* DEBUG: Write results */
@@ -564,22 +492,19 @@ int main(int argc, char *argv[]) {
 */
 
 	/* 8. Stop global timer */
-	MPI_Barrier( MPI_COMM_WORLD );
 	CUDA_CHECK_FUNCTION( cudaDeviceSynchronize() );
 	ttotal = cp_Wtime() - ttotal;
 
 	/* 9.2 Output for leaderboard */
-	if ( rank == 0 ) {
-		printf("\n");
-		/* 9.3. Total computation time */
-		printf("Time: %lf\n", ttotal );
+    printf("\n");
+    /* 9.3. Total computation time */
+    printf("Time: %lf\n", ttotal );
 
-		/* 9.4. Results: Statistics */
-		printf("Result: %d, %lu, %lu\n\n", 
-				pat_matches_root,
-				checksum_found,
-				checksum_matches );
-	}
+    /* 9.4. Results: Statistics */
+    printf("Result: %d, %lu, %lu\n\n", 
+            pat_matches,
+			checksum_found,
+			checksum_matches );
 				
 	/* 10. Free resources */	
 	int i;
@@ -587,11 +512,6 @@ int main(int argc, char *argv[]) {
 	free( pattern );
 	free( pat_length );
 	free( pat_found );
-	if (rank==0){
-		free( pat_found_res );
-		free( pat_foundRoot );
-		free( seq_matchesRoot );
-	}
 	/* 11. End */
-	MPI_Finalize();
+	return 0;
 }
