@@ -5,7 +5,10 @@ This academic project focuses on **parallelizing a DNA sequence alignment progra
 - **CUDA**: GPU-based parallelization  
 - **MPI + OpenMP**: hybrid CPU parallelization using distributed and shared memory  
 
-The goal is to demonstrate practical parallel computing techniques and evaluate performance on different hardware platforms.
+The goal of the project is to produce the same alignment results as the original sequential program while optimizing computational performance through parallelization on CPU and GPU architectures.
+
+> The algorithm and its objectives are described in more detail in the provided `handout.pdf`.  
+> A full report of the project, written in Italian, is included in `Report DNA Sequence Alignment.pdf`.
 
 ## Requirements
 
