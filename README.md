@@ -1,15 +1,11 @@
 # Parallel Genetic Sequence Alignment
 
-**Academic Project – Degree in Computer Engineering (2023/2024)**
-
-This project focuses on **parallelizing a DNA sequence alignment program** originally implemented in `align.c`. Two parallel versions have been implemented:
+This academic project focuses on **parallelizing a DNA sequence alignment program** originally implemented in `align.c`. Two parallel versions have been implemented:
 
 - **CUDA**: GPU-based parallelization  
 - **MPI + OpenMP**: hybrid CPU parallelization using distributed and shared memory  
 
 The goal is to demonstrate practical parallel computing techniques and evaluate performance on different hardware platforms.
-
----
 
 ## Requirements
 
@@ -29,8 +25,6 @@ To compile and run the project, the following tools are required:
 > export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
 > ```  
 > - CUDA is **not available on Apple Silicon**, so the CUDA target cannot be built on Mac.
-
----
 
 ## Compilation
 
